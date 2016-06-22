@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+  <head>
+    <style>
+      rect.bordered {
+        stroke: #E6E6E6;
+        stroke-width:2px;   
+      }
+
+      text.mono {
+        font-size: 9pt;
+        font-family: Consolas, courier;
+        fill: #aaa;
+      }
+      #dateOptions {
+            position: relative;
+            float:right;
+        }
+      .d3-tip {
+        line-height: 2;
+        font-weight: bold;
+        padding: 12px;
+        background: black;
+        color: #ggf;
+        border-radius: 2px;
+        opacity: 20%;
+      }
+      .d3-tip:after {
+        box-sizing: border-box;
+        display: inline;
+        font-size: 10px;
+        width: 100%;
+        line-height: 1;
+        color: black;
+        content: "\25BC";
+        position: absolute;
+        text-align: center;
+        opacity: 0.001%;
+      }
+
+      .d3-tip.n:after {
+        margin: -1px 0 0 0;
+        top: 100%;
+        left: 0;
+        opacity: 0.001%;
+      }
+      .area:hover {
+        fill: brown;
+      }
+
+      text.axis-workweek {
+        fill: #000;
+        font-weight: bold;
+      }
+
+      text.axis-worktime {
+        fill: #000;
+        font-weight: bold;
+      }
+      .legendsText {
+        fill: #000;
+        font-weight: bold;
+      }
+      .button{
+        border-radius: 4px;
+        font-family: "Times New Roman";
+        font-size: 20px;
+        background-color: #0097A7 ;
+        color:#FBFCFC  ;
+        text-align: center;
+      }
+      .traverseButton{
+        border-radius: 8px;
+        font-family: "Times New Roman";
+        width:40px;
+        height:30px;
+        font-weight: bolder;
+        font-size: 20px;
+        background-color: #663300;
+        color:#FBFCFC;
+      }
+      #ZoomChart{
+        text-align: center;
+        font-weight: bold;
+        background-color: #F1F8E9 ;
+        color:#660000;
+        margin-top:10px;
+      }
+      #options{
+        text-align: center;
+      }
+      #dataset-picker{
+        text-align: center;
+      }
+      .ZoomparaText{
+        font-size: 25px;
+        font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ; 
+      }
+      .paraText{
+        font-size: 20px;
+        font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ; 
+      }
+      .formText{
+        text-align: center;
+        font-size: 18px;
+        font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ; 
+      }
+      #dateList{
+        text-align: right;
+        font-size: 18px;
+        font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ; 
+      }
+    </style>
+    <script src="http://d3js.org/d3.v3.js"></script>
+  </head>
+  <body>
+            
+    <div id="options">
+      <p class="formText">Please check the required interval you want to see
+           <form class="formText">
+            <input type="radio" name="interval" value="1" onClick="callChart(1)"> 15 min<t>
+            <input type="radio" name="interval" value="2" onClick="callChart(2)"> 30 min<t>
+            <input type="radio" name="interval" value="4" onClick="callChart(4)"> 1 hour<t>
+            <input type="radio" name="interval" value="8" onClick="callChart(8)"> 2 hours<t>
+            <input type="radio" name="interval" value="12" onClick="callChart(12)"> 3 hours<br>
+           
+          </form> 
+    </div>
+
+    <div id="dateOptions">
+          <p class="formText">Choose Date:</p>
+          <form class="formText">
+            <select id="dateList" onchange="dateChange()" name="dates">
+            </select>
+            <br><br>
+          </form>
+    </div>
+  
+    <div id="chart">
+    </div>
+    <div id="ZoomChart">
+    </div>
+    <div id="legends">
+    </div>
+    <div id="dataset-picker">
+    </div>
+
+    <script type="text/javascript">
+    
+
+      
+      var x = document.getElementById("dateList");
+      var k=0;
+      var DOW=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+      var option = document.createElement("option");
+      var date=new Date();
+      var dateOffset = (24*60*60*1000);
+      var dateString=[];
+      var days=[];
+      var variables=["temperature","precipitation"];
+      var curVariable=variables[0];
+      
+      dateString[0]=date.getFullYear()+date.getMonth()+date.getDate();
+      //option.text = date.getDate()+" - "+(date.getMonth()+1)+" - "+date.getFullYear();
+      option.text=date.toDateString();
+      x.add(option);
+      days.push(DOW[date.getDay()]);
+      days.push(DOW[date.getDay()+1]);
+      days.push(DOW[date.getDay()+2]);
+      for(k=0;k<4;k++)
+      {
+        var option = document.createElement("option");
+        date.setTime(date.getTime() - dateOffset);
+        //dateString[k+1]=date.getFullYear()+date.getMonth()+date.getDate();
+        //option.text = date.getDate()+" - "+(date.getMonth()+1)+" - "+date.getFullYear();
+        option.text=date.toDateString();
+        x.add(option);
+      }
+      dateString=["20160616","20160615","20160614"];
+
+      var svg;
+      var times_4 = ["00:00", "01:00", "02:00", "03:00", "04:00", "05:00", "06:00", "07:00", "08:00","09:00", "10:00",  "11:00","12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00",  "23:00"];
+      var times_1 = ["00:00","00:15", "00:30", "00:45", "01:00", "01:15", "01:30", "01:45", "02:00", "02:15", "02:30","02:45","03:00","03:15", "03:30", "03:45", "04:00", "04:15", "04:30", "04:45", "05:00", "05:15", "05:30","05:45","06:00","06:15", "06:30", "06:45", "07:00", "07:15", "07:30", "07:45", "08:00", "08:15", "08:30","08:45","09:00","09:15", "09:30", "09:45", "10:00", "10:15", "10:30", "10:45", "11:00", "11:15", "11:30","11:45","12:00","12:15", "12:30", "12:45", "13:00", "13:15", "13:30", "13:45", "14:00", "14:15", "14:30","14:45","15:00","15:15", "15:30", "15:45", "16:00", "16:15", "16:30", "16:45", "17:00", "17:15", "17:30","17:45","18:00","18:15", "18:30", "18:45", "19:00", "19:15", "19:30", "19:45", "20:00", "20:15", "20:30","20:45","21:00","21:15", "21:30", "21:45", "22:00", "22:15", "22:30", "22:45", "23:00", "23:15", "23:30","23:45"];
+      var times_2 = ["00:00", "00:30", "01:00", "01:30", "02:00", "02:30","03:00", "03:30", "04:00", "04:30", "05:00", "05:30","06:00", "06:30", "07:00", "07:30", "08:00", "08:30","09:00", "09:30", "10:00", "10:30", "11:00", "11:30","12:00", "12:30", "13:00", "13:30", "14:00", "14:30","15:00", "15:30", "16:00", "16:30", "17:00", "17:30","18:00", "18:30", "19:00", "19:30", "20:00", "20:30","21:00", "21:30", "22:00", "22:30", "23:00", "23:30"];
+      var times_8 = ["00:00", "02:00", "04:00", "06:00", "08:00", "10:00","12:00", "14:00", "16:00", "18:00", "20:00", "22:00"];
+      var times_12 = ["00:00", "03:00", "06:00","09:00","12:00","15:00", "18:00","21:00"];
+      function axesLabels(interval)
+      {
+        d3.select("#chart").append("p").text("Forecast for next three days").attr("class","paraText");
+        d3.select("#chart").append("p").text("Variable: "+curVariable).attr("class","paraText");
+      var margin = { top: 50, right: 0, bottom: 50, left: 30 },
+          width = 960 - margin.left - margin.right,
+          height = 220 - margin.top - margin.bottom,
+          gridSize = Math.floor((width*interval) / 96),
+          legendElementWidth = gridSize*2,
+          buckets = 9,
+          colors = ["#081d58","#253494","#225ea8","#1d91c0","#ffff00","#ffc300","#ff5733","#c70039"], // alternatively colorbrewer.YlGnBu[9]
+          //days = ["Mo", "Tu", "We"],
+          times = [];
+
+          if (interval==12)
+            gridSize=gridSize/2;
+          if (interval==8)
+            gridSize=gridSize/1.5;
+          if(interval<4)
+          {
+            width=2*width;
+            gridSize=gridSize*2;
+          }
+
+          switch(interval)
+          {
+              case 1: times=times_4;
+                      break;
+              case 2: times=times_2;
+                      break;
+              case 4: times=times_4;
+                      break;
+              case 8: times=times_8;
+                      break;
+              case 12:times=times_12;
+                      break;
+          }
+      
+
+       svg = d3.select("#chart").append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+          .append("g")
+          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      var dayLabels = svg.selectAll(".dayLabel")
+          .data(days)
+          .enter().append("text")
+            .text(function (d) { return d; })
+            .attr("x", 0)
+            .attr("y", function (d, i) { return i * gridSize; })
+            .style("text-anchor", "end")
+            .attr("transform", "translate(-6," + gridSize / 1.5 + ")")
+            .attr("class", function (d, i) { return ((i >= 0 && i <= 4) ? "dayLabel mono axis axis-workweek" : "dayLabel mono axis"); });
+
+      var timeLabels = svg.selectAll(".timeLabel")
+          .data(times)
+          .enter().append("text")
+            .text(function(d) { return d; })
+            .attr("x", function(d, i) { if(interval>1) return i * gridSize; else return i * 4 * gridSize; })
+            .attr("y", 0)
+            .style("text-anchor", "middle")
+            .attr("transform", "translate(" + gridSize/2 + ", -6)")
+            .attr("class", function(d, i) { return "timeLabel mono axis axis-worktime"; });
+      }
+      datasets = ["temperature_20160616.json"];
+      var heatmapChart = function(jsonFile,latlonvar,interval) {
+        axesLabels(interval);
+        //alert(jsonFile);
+        var days=[];
+      var hour=[];
+      var val=[];
+      var minmax=[];
+      var variable;
+      var unit;
+        d3.json(jsonFile,
+        function(d) {
+          //alert(d.date+d.variable);
+          variable=d.variable;
+          unit=d.unit;
+          minmax=d.minmax;
+          //alert(minmax);
+          for(i=0;i<d.locations.length;i++)
+          {
+           var latlon=d.locations[i].latitude+""+d.locations[i].longitude;
+           console.log(latlon);
+           if(latlon==latlonvar)
+           {
+           for(j=0;j<d.locations[i].values.length;j++)
+           {
+                //console.log(d.locations[i].values[j]);
+                if(j%interval==0){
+                days.push(d.locations[i].values[j][0]);
+                hour.push(d.locations[i].values[j][1]);
+                //if(j>0)
+                  val.push(d.locations[i].values[j][2]);
+                //else
+                  //val.push(minmax[0]-1);
+              }
+
+          }
+          //alert(days);
+          //alert(hour);
+          //alert(val);
+          }
+         }
+          disp();
+          }); 
+        function disp() {
+          /*d3.select("#chart").append("p").text("Variable:  "+curVariable).style("font-size","20px").style("align","center");*/
+          var margin = { top: 50, right: 0, bottom: 100, left: 30 },
+          width = 960 - margin.left - margin.right,
+          height = 220 - margin.top - margin.bottom,
+          gridSize = Math.floor((width*interval) / 96),
+          legendElementWidth = gridSize*2,
+          buckets = 9,
+          colors = ["#081d58","#253494","#225ea8","#1d91c0","#ffff00","#ffc300","#ff5733","#c70039"]; // alternatively colorbrewer.YlGnBu[9]
+          var i=-1;
+          var j=-1;
+          var tip;
+          var factor=1;
+          var colorScale = d3.scale.quantile()
+              .domain([minmax[0], buckets - 1, minmax[1]])
+              .range(colors);
+          if (interval==12)
+            gridSize=gridSize/2;
+          if (interval==8)
+            gridSize=gridSize/1.5;
+          if(interval<4)
+          {
+            width=2*width;
+            gridSize=gridSize*2;
+            legendElementWidth=60;
+            if (interval==2)
+              factor=48;
+            else
+              factor=96;
+          }
+          var spacing=96/interval;
+          var cards = svg.selectAll(".hour")
+              .data(val);
+
+          cards.append("title");
+
+          cards.enter().append("rect")
+              .attr("x", function() { i=i+1; if(interval>2)
+                                              return ((hour[i]*4) * gridSize)/interval; 
+                                            else
+                                            { 
+                                              return (i%factor)*gridSize;
+                                            }  })
+              .attr("y", function() { j=j+1; return (days[j] - 1) * gridSize; })
+              .attr("rx", 4)
+              .attr("ry", 4)
+              .attr("class", "hour bordered")
+              .attr("width", gridSize)
+              .attr("height", gridSize)
+              .style("fill", colors[0]);
+
+          cards.transition().duration(500)
+              .style("fill", function(d) { if(d>minmax[1]) return "#FBFCFC"; else return colorScale(d); });
+
+          cards.select("title").text(function(d) { return d; });
+          
+          cards.exit().remove();
+          
+          var legsvg = d3.select("#legends").append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", 100 + margin.top + margin.bottom)
+          .append("g")
+          .attr("transform", "translate(" + margin.left + ",0)");
+          var legend = legsvg.selectAll(".legend")
+              .data([0].concat(colorScale.quantiles()), function(d) { return d; });
+
+          legend.enter().append("g")
+              .attr("class", "legend");
+
+          legend.append("rect")
+            .attr("x", function(d, i) { if(interval<4)return legendElementWidth * i; else return gridSize*i; })
+            .attr("y", height)
+            .attr("width", legendElementWidth)
+            .attr("height", function(d,i){ if (interval<4) return legendElementWidth / 2; else return gridSize/2;})
+            .style("fill", function(d, i) { return colors[i]; });
+
+          legend.append("text")
+            .text(function(d) { return "≥ " + Math.round(d); })
+            .attr("class","legendsText")
+            .attr("x", function(d, i) { if(interval<4)return legendElementWidth * i; else return gridSize*i;  })
+            .attr("y", function(d,i){ if (interval<4) return height + legendElementWidth-5; else return height + gridSize-5;});
+          
+
+          legend.append("text")
+            .text("units in "+unit)
+            .attr("x", gridSize * 2 )
+            .attr("y", function(d,i){ if (interval<4) return height + legendElementWidth+15; else return height + gridSize+15;});
+          
+          legend.exit().remove();
+
+        var zoomButton;
+        if(interval==1)
+        {
+          zoomButton=d3.select("#chart")
+            .append("input")
+            .attr("value", "zoom")
+            .attr("type", "button")
+            .attr("class", "button")
+            .on("click", function(d) {
+              document.getElementById("ZoomChart").innerHTML = "";
+               createZoomChart(0,11);
+
+        });
+        }
+
+        } 
+      };
+      var a = window.location.toString();
+      var latlon = a.substring(a.indexOf("=")+1);
+      //alert(latlon);
+     // heatmapChart("temperature_"+dateString[0],latlon,4);
+      heatmapChart(curVariable+"_"+dateString[0]+".json",latlon,4);
+      //appending two buttons on the page for each dataset to be displayed
+      var datasetpicker = d3.select("#dataset-picker").selectAll(".dataset-button")
+        .data(variables);
+
+      datasetpicker.enter()
+        .append("input")
+        .attr("value", function(d){ return d; })
+        .attr("type", "button")
+        .attr("class", "button")
+        .on("click", function(d) {
+          document.getElementById("chart").innerHTML = "";
+          document.getElementById("legends").innerHTML = "";
+          document.getElementById("ZoomChart").innerHTML = "";
+          curVariable=d;
+          heatmapChart(d+"_"+dateString[0]+".json",latlon,4);
+
+        });
+
+       
+       
+
+
+        function callChart(interval){
+          document.getElementById("chart").innerHTML = "";
+           document.getElementById("legends").innerHTML = "";
+          document.getElementById("ZoomChart").innerHTML = "";
+          heatmapChart(curVariable+"_"+dateString[0]+".json",latlon,interval);
+          /*if(interval==1)
+            createZoomChart(13,25);*/
+        }
+
+
+        function dateChange(){
+          var date=document.getElementById("dateList").value;
+          alert(date);
+          var list=document.getElementById("dateList");
+          var index=list.selectedIndex;
+          document.getElementById("chart").innerHTML = "";
+           document.getElementById("legends").innerHTML = "";
+          document.getElementById("ZoomChart").innerHTML = "";
+          heatmapChart(curVariable+"_"+dateString[index]+".json",latlon,4);
+          //to load whole new files of that particular date.
+        }
+
+
+        function createZoomChart(start,end)
+        {
+          d3.select("#ZoomChart").append("p").text("More detailed readings ").attr("class","ZoomparaText");
+        var margin = { top: 50, right: 10, bottom: 100, left: 30 },
+          width = 530 - margin.left - margin.right,
+          height = 200 - margin.top - margin.bottom,
+          gridSize = Math.floor(width / 12),
+          legendElementWidth = gridSize*2,
+          buckets = 9,
+          colors = ["#081d58","#253494","#225ea8","#1d91c0","#ffff00","#ffc300","#ff5733","#c70039"], // alternatively colorbrewer.YlGnBu[9]
+          days = ["Mo", "Tu", "We"];
+          if(start<84)
+            times = times_1.slice(start,end+1);
+          else
+            times = times_1.slice(start);
+
+        var svgZoom = d3.select("#ZoomChart").append("svg")
+          .attr("width", width + margin.left + margin.right+100)
+          .attr("height", height + margin.top + margin.bottom)
+          .append("g")
+          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      var dayLabels = svgZoom.selectAll(".dayLabelZoom")
+          .data(days)
+          .enter().append("text")
+            .text(function (d) { return d; })
+            .attr("x", 0)
+            .attr("y", function (d, i) { return i * gridSize; })
+            .style("text-anchor", "end")
+            .attr("transform", "translate(-6," + gridSize / 1.5 + ")")
+            .attr("class", function (d, i) { "dayLabel mono axis axis-workweek"; });
+
+      var timeLabels = svgZoom.selectAll(".timeLabelZoom")
+          .data(times)
+          .enter().append("text")
+            .text(function(d) { return d; })
+            .attr("x", function(d, i) { return i*gridSize; })
+            .attr("y", 0)
+            .style("text-anchor", "middle")
+            .attr("transform", "translate(" + gridSize / 2 + ", -6)")
+            .attr("class", function(d, i) { "timeLabel mono axis axis-worktime"; });
+
+      var heatmapChart = function(jsonFile,latlonvar) {
+        //alert(jsonFile);
+        var days=[];
+      var hour=[];
+      var val=[];
+      var minmax=[];
+      var variable;
+      var unit;
+        d3.json(jsonFile,
+        function(d) {
+          //alert(d.date+d.variable);
+          variable=d.variable;
+          unit=d.unit;
+          minmax=d.minmax;
+          //alert(minmax);
+          for(i=0;i<d.locations.length;i++)
+          {
+           var latlon=d.locations[i].latitude+""+d.locations[i].longitude;
+           console.log(latlon);
+           if(latlon==latlonvar)
+           {
+           for(j=0;j<d.locations[i].values.length;j++)
+           {
+                //console.log(d.locations[i].values[j]);
+                if((j%96)>=start&&(j%96)<=end){
+                days.push(d.locations[i].values[j][0]);
+                hour.push(d.locations[i].values[j][1]);
+                //if(j>0)
+                  val.push(d.locations[i].values[j][2]);
+                //else
+                  //val.push(minmax[0]-1);
+                }
+
+          }
+         // alert(val.length);
+         // alert(val);
+          }
+         }
+          disp();
+          }); 
+        function disp() {
+          var i=-1;
+          var j=-1;
+          var tip;
+          var factor=1;
+          var colorScale = d3.scale.quantile()
+              .domain([minmax[0], buckets - 1, minmax[1]])
+              .range(colors);
+  
+          var cards = svgZoom.selectAll(".hour")
+              .data(val);
+
+          cards.append("title");
+
+          cards.enter().append("rect")
+              .attr("x", function() { i=i+1; return (i%12)*gridSize; })
+              .attr("y", function() { j=j+1; return (days[j] - 1) * gridSize; })
+              .attr("rx", 4)
+              .attr("ry", 4)
+              .attr("class", "hour bordered")
+              .attr("width", gridSize)
+              .attr("height", gridSize)
+              .style("fill", colors[0]);
+
+          cards.transition().duration(1000)
+              .style("fill", function(d) { if(d>minmax[1]) return "#FBFCFC"; else return colorScale(d); });
+
+          cards.select("title").text(function(d) { return d; });
+          
+          cards.exit().remove();
+        }
+        }
+        heatmapChart(curVariable+"_"+dateString[0]+".json",latlon);
+
+        var leftButton=d3.select("#ZoomChart")
+            .attr("transform","translate(5,300)")
+            .append("input")
+            .attr("value", "<")
+            .attr("type", "button")
+            .attr("class", "traverseButton")
+            .on("click", function(d) {
+              document.getElementById("ZoomChart").innerHTML = "";
+              if(start>0)
+               createZoomChart(start-1,end-1);
+             else
+              createZoomChart(0,11);});
+
+        var rightButton=d3.select("#ZoomChart")
+            .append("input")
+            .attr("value", ">")
+            .attr("type", "button")
+            .attr("class", "traverseButton")
+            .on("click", function(d) {
+              document.getElementById("ZoomChart").innerHTML = "";
+              if(end<95)
+               createZoomChart(start+1,end+1);
+              else
+               createZoomChart(84,95);
+
+        });
+
+
+
+      }
+
+
+    </script>
+  </body>
+</html>
