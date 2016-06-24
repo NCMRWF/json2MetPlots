@@ -54,12 +54,20 @@
   				fill: brown;
   			}*/
         #map1{
-          text-align: center;
           font-weight: bold;
           color:#660000;
-          width:500px;
+          display: inline-block;
+          float:left;
+          width:400px;
           height:430px;
           margin-top:10px;
+        }
+        #plots{
+          position:absolute;
+          margin-left: 150px;
+          margin-top: 50px;
+          text-align:right;
+          display: inline-block;
         }
   			
   </style>
@@ -73,8 +81,8 @@
 
 					<div id = "map1"> 
 						<div id="subtitle">Glimpse of Weather Conditions in the prominent states of India</div>
-							</div>
-					<div ><iframe src="" name="iframe_a" width="100%" height="900px" ></iframe></div>
+					</div>
+					<div id="plots"><iframe src="" name="iframe_a" width="900px" height="550px" ></iframe></div>
 				     		   
 	  
 
@@ -82,7 +90,7 @@
 var places = [
               {
                 name: "Delhi",
-        nam: "calenderViewfor22JuneZoom.html",
+        nam: "calenderViewfor22June2016.html",
         latlon: "28.0N,75.0E",
                 location: {
                   latitude: 28.28,

@@ -94,21 +94,21 @@
         text-align: center;
       }
       .ZoomparaText{
-        font-size: 25px;
+        font-size: 15px;
         font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ; 
       }
       .paraText{
-        font-size: 20px;
+        font-size: 15px;
         font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ; 
       }
       .formText{
         text-align: center;
-        font-size: 18px;
+        font-size: 15px;
         font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ; 
       }
       #dateList{
         text-align: right;
-        font-size: 18px;
+        font-size: 15px;
         font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ; 
       }
     </style>
@@ -166,8 +166,8 @@
       option.text=date.toDateString();
       x.add(option);
       days.push(DOW[date.getDay()]);
-      days.push(DOW[date.getDay()+1]);
-      days.push(DOW[date.getDay()+2]);
+      days.push(DOW[(date.getDay()+1)%7]);
+      days.push(DOW[(date.getDay()+2)%7]);
       for(k=0;k<4;k++)
       {
         var option = document.createElement("option");
@@ -454,13 +454,13 @@
         {
           d3.select("#ZoomChart").append("p").text("More detailed readings ").attr("class","ZoomparaText");
         var margin = { top: 50, right: 10, bottom: 100, left: 30 },
-          width = 530 - margin.left - margin.right,
+          width = 540 - margin.left - margin.right,
           height = 200 - margin.top - margin.bottom,
           gridSize = Math.floor(width / 12),
           legendElementWidth = gridSize*2,
           buckets = 9,
-          colors = ["#081d58","#253494","#225ea8","#1d91c0","#ffff00","#ffc300","#ff5733","#c70039"], // alternatively colorbrewer.YlGnBu[9]
-          days = ["Mo", "Tu", "We"];
+          colors = ["#081d58","#253494","#225ea8","#1d91c0","#ffff00","#ffc300","#ff5733","#c70039"]; // alternatively colorbrewer.YlGnBu[9]
+          //days = ["Wed","Thu","Fri"];
           if(start<84)
             times = times_1.slice(start,end+1);
           else
@@ -479,7 +479,7 @@
             .attr("x", 0)
             .attr("y", function (d, i) { return i * gridSize; })
             .style("text-anchor", "end")
-            .attr("transform", "translate(-6," + gridSize / 1.5 + ")")
+            .attr("transform", "translate(-5," + gridSize / 1.5 + ")")
             .attr("class", function (d, i) { "dayLabel mono axis axis-workweek"; });
 
       var timeLabels = svgZoom.selectAll(".timeLabelZoom")
