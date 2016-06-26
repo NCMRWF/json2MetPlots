@@ -558,10 +558,10 @@
            {
            for(j=0;j<d.locations[i].values.length;j++)
            {
-                m=(j%remFactor);
+                m=(j%96);
                 console.log("m="+m);
                 //console.log(d.locations[i].values[j]);
-                if(m>=start && m<=end)
+                if(m>=start_val && m<=end_val &&(j%interval)==0)
                 {
                  console.log(j);
                 days.push(d.locations[i].values[j][0]);
