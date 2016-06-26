@@ -83,9 +83,8 @@
       #ZoomChart{
         text-align: center;
         font-weight: bold;
-        background-color: #F1F8E9 ;
         color:#660000;
-        margin-top:10px;
+        margin-top:5px;
       }
       #options{
         text-align: center;
@@ -117,7 +116,7 @@
   <body>
             
     <div id="options">
-      <p class="formText">Please check the required interval you want to see
+      <p class="formText">Please check the required interval you want to see</p>
            <form class="formText">
             <input type="radio" name="interval" value="1" onClick="callChart(1)"> 15 min<t>
             <input type="radio" name="interval" value="2" onClick="callChart(2)"> 30 min<t>
@@ -145,10 +144,13 @@
     </div>
     <div id="dataset-picker">
     </div>
+    <!-- <div id="nplots"><iframe src="calenderView3.html" name="iframe_b" width="100%" height="750px" ></iframe></div> -->
 
     <script type="text/javascript">
     
-
+     // var p=window.top.document.getElementById("frameId").name;
+     
+      //alert(p);
       
       var x = document.getElementById("dateList");
       var k=0;
@@ -252,7 +254,7 @@
       }
       datasets = ["temperature_20160616.json"];
       var heatmapChart = function(jsonFile,latlonvar,interval) {
-        axesLabels(interval);
+        
         //alert(jsonFile);
         var days=[];
       var hour=[];
@@ -260,6 +262,9 @@
       var minmax=[];
       var variable;
       var unit;
+      if(interval>4)
+      {
+        axesLabels(interval);
         d3.json(jsonFile,
         function(d) {
           //alert(d.date+d.variable);
@@ -291,8 +296,19 @@
           //alert(val);
           }
          }
-          disp();
-          }); 
+         
+              disp();
+
+         }); 
+      }
+        else
+            {
+              //disp();
+              document.getElementById("chart").innerHTML="";
+              alert("going to zoomChart");
+              createZoomChart(0,11,interval);
+
+            }
         function disp() {
           /*d3.select("#chart").append("p").text("Variable:  "+curVariable).style("font-size","20px").style("align","center");*/
           var margin = { top: 50, right: 0, bottom: 100, left: 30 },
@@ -383,7 +399,7 @@
           
           legend.exit().remove();
 
-        var zoomButton;
+       /* var zoomButton;
         if(interval==1)
         {
           zoomButton=d3.select("#chart")
@@ -392,11 +408,11 @@
             .attr("type", "button")
             .attr("class", "button")
             .on("click", function(d) {
-              document.getElementById("ZoomChart").innerHTML = "";
+            document.getElementById("ZoomChart").innerHTML = "";
                createZoomChart(0,11);
 
         });
-        }
+        }*/
 
         } 
       };
@@ -430,7 +446,7 @@
         function callChart(interval){
           document.getElementById("chart").innerHTML = "";
            document.getElementById("legends").innerHTML = "";
-          document.getElementById("ZoomChart").innerHTML = "";
+         document.getElementById("ZoomChart").innerHTML = "";
           heatmapChart(curVariable+"_"+dateString[0]+".json",latlon,interval);
           /*if(interval==1)
             createZoomChart(13,25);*/
@@ -450,7 +466,7 @@
         }
 
 
-        function createZoomChart(start,end)
+        function createZoomChart(start,end,interval)
         {
           d3.select("#ZoomChart").append("p").text("More detailed readings ").attr("class","ZoomparaText");
         var margin = { top: 50, right: 10, bottom: 100, left: 30 },
@@ -461,10 +477,31 @@
           buckets = 9,
           colors = ["#081d58","#253494","#225ea8","#1d91c0","#ffff00","#ffc300","#ff5733","#c70039"]; // alternatively colorbrewer.YlGnBu[9]
           //days = ["Wed","Thu","Fri"];
-          if(start<84)
+           switch(interval)
+          {
+              case 1:{if(start<84)
+                          times = times_1.slice(start,end+1);
+                        else
+                          times = times_1.slice(start);
+                      }
+                      break;
+              case 2: {if(start<36)
+                          times = times_2.slice(start,end+1);
+                        else
+                          times = times_2.slice(start);
+                      }
+                      break;
+              case 4: {if(start<12)
+                          times = times_4.slice(start,end+1);
+                        else
+                          times = times_4.slice(start);
+                      }
+                      break;
+          }
+          /*if(start<84)
             times = times_1.slice(start,end+1);
           else
-            times = times_1.slice(start);
+            times = times_1.slice(start);*/
 
         var svgZoom = d3.select("#ZoomChart").append("svg")
           .attr("width", width + margin.left + margin.right+100)
@@ -492,7 +529,7 @@
             .attr("transform", "translate(" + gridSize / 2 + ", -6)")
             .attr("class", function(d, i) { "timeLabel mono axis axis-worktime"; });
 
-      var heatmapChart = function(jsonFile,latlonvar) {
+      var heatmapChart = function(jsonFile,latlonvar,interval) {
         //alert(jsonFile);
         var days=[];
       var hour=[];
@@ -500,6 +537,12 @@
       var minmax=[];
       var variable;
       var unit;
+      var remFactor=96/interval;
+      var start_val=interval*start;
+      console.log("start val="+start_val);
+      var end_val=interval*end;
+      console.log("end val="+end_val);
+      var m;
         d3.json(jsonFile,
         function(d) {
           //alert(d.date+d.variable);
@@ -515,10 +558,15 @@
            {
            for(j=0;j<d.locations[i].values.length;j++)
            {
+                m=(j%remFactor);
+                console.log("m="+m);
                 //console.log(d.locations[i].values[j]);
-                if((j%96)>=start&&(j%96)<=end){
+                if(m>=start && m<=end)
+                {
+                 console.log(j);
                 days.push(d.locations[i].values[j][0]);
                 hour.push(d.locations[i].values[j][1]);
+
                 //if(j>0)
                   val.push(d.locations[i].values[j][2]);
                 //else
@@ -564,7 +612,7 @@
           cards.exit().remove();
         }
         }
-        heatmapChart(curVariable+"_"+dateString[0]+".json",latlon);
+        heatmapChart(curVariable+"_"+dateString[0]+".json",latlon,interval);
 
         var leftButton=d3.select("#ZoomChart")
             .attr("transform","translate(5,300)")
@@ -575,9 +623,9 @@
             .on("click", function(d) {
               document.getElementById("ZoomChart").innerHTML = "";
               if(start>0)
-               createZoomChart(start-1,end-1);
+               createZoomChart(start-1,end-1,interval);
              else
-              createZoomChart(0,11);});
+              createZoomChart(0,11,interval);});
 
         var rightButton=d3.select("#ZoomChart")
             .append("input")
@@ -587,9 +635,9 @@
             .on("click", function(d) {
               document.getElementById("ZoomChart").innerHTML = "";
               if(end<95)
-               createZoomChart(start+1,end+1);
+               createZoomChart(start+1,end+1,interval);
               else
-               createZoomChart(84,95);
+               createZoomChart(84,95,interval);
 
         });
 
