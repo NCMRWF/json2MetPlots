@@ -1,0 +1,16 @@
+<vfile>
+<variables>
+	<variable>temperature</variable>
+	<variable>pres</variable>
+	<variable>shumid</variable>
+	<variable>swflux</variable>
+	<variable>mslp</variable>
+</variables>	
+<vnames>
+	<name>Temperature</name>
+	<name>Pressure</name>
+	<name>Humidity</name>
+	<name>Short Wave Flux</name>
+	<name>Mean Sea Level Pressure</name>
+</vnames>
+</vfile>
