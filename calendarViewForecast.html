@@ -111,6 +111,7 @@
         font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ; 
       }
     </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
     <script src="http://d3js.org/d3.v3.js"></script>
   </head>
   <body>
@@ -147,11 +148,45 @@
     <!-- <div id="nplots"><iframe src="calenderView3.html" name="iframe_b" width="100%" height="750px" ></iframe></div> -->
 
     <script type="text/javascript">
-    
+     var latlon;
+     var variables=[];
+     var vnames=[];
+     var curVariable;
      // var p=window.top.document.getElementById("frameId").name;
      
       //alert(p);
-      
+          $.ajax({
+          url: 'Vfile.xml',
+          type: 'GET',
+          dataType: 'xml',
+          timeout: 1000,
+          error: function(){
+              alert('Error loading XML document');
+          },
+          success: function(xml){
+              alert(xml);
+              var xmlElement=xml.getElementsByTagName("variable");
+              for (i=0;i<xmlElement.length;i++)
+              {
+                  variables.push(xmlElement[i].childNodes[0].nodeValue);
+                  alert(xmlElement[i].childNodes[0].nodeValue);
+              }
+              var xmlElement=xml.getElementsByTagName("name");
+              for (i=0;i<xmlElement.length;i++)
+              {
+                  vnames.push(xmlElement[i].childNodes[0].nodeValue);
+                  alert(xmlElement[i].childNodes[0].nodeValue);
+              }
+              
+              curVariable=variables[0];
+              datasetButtons();
+               var a = window.location.toString();
+                latlon = a.substring(a.indexOf("=")+1);
+                //alert(latlon);
+               // heatmapChart("temperature_"+dateString[0],latlon,4);
+                heatmapChart("Stats/"+curVariable+"_"+dateString[0]+".json",latlon,4);
+                    }
+      });
       var x = document.getElementById("dateList");
       var k=0;
       var DOW=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
@@ -160,8 +195,8 @@
       var dateOffset = (24*60*60*1000);
       var dateString=[];
       var days=[];
-      var variables=["temperature","precipitation"];
-      var curVariable=variables[0];
+      
+      
       
       dateString[0]=date.getFullYear()+date.getMonth()+date.getDate();
       //option.text = date.getDate()+" - "+(date.getMonth()+1)+" - "+date.getFullYear();
@@ -179,7 +214,7 @@
         option.text=date.toDateString();
         x.add(option);
       }
-      dateString=["20160616","20160615","20160614"];
+      dateString=["20160621","20160620","20160619","20160618","20160617"];
 
       var svg;
       var times_4 = ["00:00", "01:00", "02:00", "03:00", "04:00", "05:00", "06:00", "07:00", "08:00","09:00", "10:00",  "11:00","12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00",  "23:00"];
@@ -305,6 +340,7 @@
             {
               //disp();
               document.getElementById("chart").innerHTML="";
+              document.getElementById("legends").innerHTML = "";
               alert("going to zoomChart");
               createZoomChart(0,11,interval);
 
@@ -416,18 +452,23 @@
 
         } 
       };
-      var a = window.location.toString();
-      var latlon = a.substring(a.indexOf("=")+1);
+     // var a = window.location.toString();
+      //var latlon = a.substring(a.indexOf("=")+1);
       //alert(latlon);
      // heatmapChart("temperature_"+dateString[0],latlon,4);
-      heatmapChart(curVariable+"_"+dateString[0]+".json",latlon,4);
+      //heatmapChart(curVariable+"_"+dateString[0]+".json",latlon,4);
       //appending two buttons on the page for each dataset to be displayed
+      function datasetButtons(){
+
       var datasetpicker = d3.select("#dataset-picker").selectAll(".dataset-button")
         .data(variables);
 
       datasetpicker.enter()
         .append("input")
-        .attr("value", function(d){ return d; })
+        .attr("value", function(d){ var n = variables.indexOf(d);
+                                    var name=vnames[n];
+                                    //alert(n);
+                                      return name; })
         .attr("type", "button")
         .attr("class", "button")
         .on("click", function(d) {
@@ -435,9 +476,10 @@
           document.getElementById("legends").innerHTML = "";
           document.getElementById("ZoomChart").innerHTML = "";
           curVariable=d;
-          heatmapChart(d+"_"+dateString[0]+".json",latlon,4);
+          heatmapChart("Stats/"+d+"_"+dateString[0]+".json",latlon,4);
 
         });
+      }
 
        
        
@@ -447,7 +489,7 @@
           document.getElementById("chart").innerHTML = "";
            document.getElementById("legends").innerHTML = "";
          document.getElementById("ZoomChart").innerHTML = "";
-          heatmapChart(curVariable+"_"+dateString[0]+".json",latlon,interval);
+          heatmapChart("Stats/"+curVariable+"_"+dateString[0]+".json",latlon,interval);
           /*if(interval==1)
             createZoomChart(13,25);*/
         }
@@ -455,13 +497,14 @@
 
         function dateChange(){
           var date=document.getElementById("dateList").value;
-          alert(date);
+          //alert(date);
           var list=document.getElementById("dateList");
           var index=list.selectedIndex;
+          alert(index);
           document.getElementById("chart").innerHTML = "";
            document.getElementById("legends").innerHTML = "";
           document.getElementById("ZoomChart").innerHTML = "";
-          heatmapChart(curVariable+"_"+dateString[index]+".json",latlon,4);
+          heatmapChart("Stats/"+curVariable+"_"+dateString[index]+".json",latlon,4);
           //to load whole new files of that particular date.
         }
 
@@ -470,7 +513,7 @@
         {
           d3.select("#ZoomChart").append("p").text("More detailed readings ").attr("class","ZoomparaText");
         var margin = { top: 50, right: 10, bottom: 100, left: 30 },
-          width = 540 - margin.left - margin.right,
+          width = 450 - margin.left - margin.right,
           height = 200 - margin.top - margin.bottom,
           gridSize = Math.floor(width / 12),
           legendElementWidth = gridSize*2,
@@ -530,7 +573,7 @@
             .attr("class", function(d, i) { "timeLabel mono axis axis-worktime"; });
 
       var heatmapChart = function(jsonFile,latlonvar,interval) {
-        //alert(jsonFile);
+        alert(jsonFile);
         var days=[];
       var hour=[];
       var val=[];
@@ -578,9 +621,9 @@
          // alert(val);
           }
          }
-          disp();
+          dispZoom();
           }); 
-        function disp() {
+        function dispZoom() {
           var i=-1;
           var j=-1;
           var tip;
@@ -610,18 +653,54 @@
           cards.select("title").text(function(d) { return d; });
           
           cards.exit().remove();
+
+
+          var legsvg = d3.select("#legends").append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", 100 + margin.top + margin.bottom)
+          .append("g")
+          .attr("transform", "translate(" + margin.left + ",0)");
+          
+
+          var legend = legsvg.selectAll(".legend")
+              .data([0].concat(colorScale.quantiles()), function(d) { return d; });
+
+          legend.enter().append("g")
+              .attr("class", "legend");
+
+          legend.append("rect")
+            .attr("x", function(d, i) { return gridSize*i; })
+            .attr("y", height)
+            .attr("width", legendElementWidth)
+            .attr("height", function(d,i){  return gridSize/2;})
+            .style("fill", function(d, i) { return colors[i]; });
+
+          legend.append("text")
+            .text(function(d) { return "≥ " + Math.round(d); })
+            .attr("class","legendsText")
+            .attr("x", function(d, i) {  return gridSize*i;  })
+            .attr("y", function(d,i){ return height + gridSize-5;});
+          
+
+          legend.append("text")
+            .text("units in "+unit)
+            .attr("x", gridSize * 2 )
+            .attr("y", function(d,i){ return height + gridSize+15;});
+          
+          legend.exit().remove();
+
         }
         }
-        heatmapChart(curVariable+"_"+dateString[0]+".json",latlon,interval);
+        heatmapChart("Stats/"+curVariable+"_"+dateString[0]+".json",latlon,interval);
 
         var leftButton=d3.select("#ZoomChart")
-            .attr("transform","translate(5,300)")
             .append("input")
             .attr("value", "<")
             .attr("type", "button")
             .attr("class", "traverseButton")
             .on("click", function(d) {
               document.getElementById("ZoomChart").innerHTML = "";
+              document.getElementById("legends").innerHTML = "";
               if(start>0)
                createZoomChart(start-1,end-1,interval);
              else
@@ -634,6 +713,7 @@
             .attr("class", "traverseButton")
             .on("click", function(d) {
               document.getElementById("ZoomChart").innerHTML = "";
+              document.getElementById("legends").innerHTML = "";
               if(end<95)
                createZoomChart(start+1,end+1,interval);
               else
