@@ -104,7 +104,7 @@ var line = d3.svg.line()
     .y(function(d) { if(d.val==9999) return y(0); return y(d.val); })
     .interpolate("linear");
 
-
+var gv="all";
 var svg;
 var svg1;
 var latlon;
@@ -201,52 +201,39 @@ var getGraph=function (g_variable){
               console.log(newArray);
              
            
+         
+          y.domain([minmax[0],minmax[1]]);
 
 
-            y.domain([minmax[0],minmax[1]]);
-
-            svg.append("line")
-              .attr("class", "line_b")
-              .attr("x1", 0)
-              .attr("x2", width - 60)
-              .attr("y1", height+10)
-              .attr("y2", height+10)
-              .attr("stroke","#273746")
-              .style("stroke-opacity", 1);
+           
 
 
             svg1.append("path")
                 .datum(d.name)
                 .attr("d",function(d){ return line(newArray);})
                 .attr("class","line")
-                .style("stroke", function(d) {  console.log(d); return colors[variables.indexOf(d)]; })
+                .style("stroke", function(d) { console.log(d); return colors[variables.indexOf(d)]; })
                 .style("fill", function(d) {  console.log(d); return colors[variables.indexOf(d)]; })
-                .style("fill-opacity", .5);
+                .style("fill-opacity",function(d){
+                                                  if(gv=="all") return 0.5; 
+                                                  else{
+                                                    if(d==gv)
+                                                      return 1;
+                                                    else
+                                                      return 0.1;
+                                                  }
+                                                })
+                .style("stroke-opacity",function(d){
+                                                  if(gv=="all") return 1; 
+                                                  else{
+                                                    if(d==gv)
+                                                      return 1;
+                                                    else
+                                                      return 0.1;
+                                                  }
+                                                });      
 
-            svg.append("g")
-                .attr("class", "x axis")
-                .attr("transform", "translate(5," + height +")")
-                .call(xAxis);
-
-            svg.append("g")
-                .attr("class", "y axis")
-                .call(yAxis)
-                .append("text")
-                .attr("transform", "rotate(-90)")
-                .attr("y", (margin.top+5))
-                .attr("x",5)
-                .attr("dy", ".71em")
-                .style("text-anchor", "end")
-                .text("Temperature (ºF)");
-           
-           
             
-
-            svg.append("p")
-                .text("unit: "+unit)
-                .attr("transform", "rotate(-90)")
-                .attr("y",30)
-                .attr("x",0);
 
            //     alert(index);
            //    alert(u_date);
@@ -274,9 +261,36 @@ var graphPlot= function(w_var){
                   .attr("width", width + margin.left + margin.right)
                   .attr("height", height)
                   .append("g");
+              
+              svg.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(5," + height +")")
+                .call(xAxis);
+              
+              svg.append("line")
+              .attr("class", "line_b")
+              .attr("x1", 0)
+              .attr("x2", width -20)
+              .attr("y1", height)
+              .attr("y2", height)
+              .attr("stroke","#273746")
+              .style("stroke-opacity", 1);
+
+              
+
 
           if(w_var=="all")
           {
+              gv="all";
+              svg.append("line")
+              .attr("class", "line_b")
+              .attr("x1", 3)
+              .attr("x2", 3)
+              .attr("y1", 0)
+              .attr("y2", height)
+              .attr("stroke","#273746")
+              .style("stroke-opacity", 1);
+
               for(j=0;j<variables.length;j++)
               {
                    getGraph(variables[j]);               
@@ -285,7 +299,33 @@ var graphPlot= function(w_var){
           }
           else
           {
-            getGraph(w_var);
+            gv=w_var;
+            var m_index=variables.indexOf(w_var);
+            for(j=0;j<variables.length;j++)
+              {
+                   getGraph(variables[j]);               
+
+              }
+            y.domain([minmax_values[m_index][0],minmax_values[m_index][1]]);
+            svg.append("g")
+                .attr("class", "y axis")
+                .call(yAxis)
+                .append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", (margin.top+5))
+                .attr("x",5)
+                .attr("dy", ".71em");
+                
+            svg.append("text")
+              .style("font-weight","bolder")
+              .attr("transform", "rotate(-90)")
+              .attr("y", "-50")
+              .attr("x","-270")
+              .attr("dy", "1em")
+              .style("text-anchor", "middle")
+              .text(units[m_index]);
+                  //getGraph(w_var);
+
           }
       }
 function datasetButtons(){
