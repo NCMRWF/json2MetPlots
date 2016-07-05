@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- to include time variable in line  -->
+<!-- color coded and time axis corrected .( now to correct the display of y axis) -->
 <meta charset="utf-8">
 <style>
 
@@ -19,23 +19,42 @@ body {
 }
 
 .line {
-  fill: none;
-  stroke: steelblue;
+  opacity: 10%;
   stroke-width: 1.5px;
 }
+#dataset-picker{
+  margin-top: 40px;
+  text-align: center;
+
+}
+.button{
+        border-radius: 8px;
+        font-family: "Times New Roman";
+        width:150px;
+        height:40px;
+        font-weight: bolder;
+        color:#FBFCFC;
+      }
 
 </style>
 <body>
+  <div id="plot"></div>
+  <br><br>
+  <div id="dataset-picker">
+  </div>
 <script src="//d3js.org/d3.v3.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
 <script>
 var index=-1;
-var margin = {top: 20, right: 80, bottom: 30, left: 50},
-    width = 1500 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
-
+var margin = {top: 20, right: 80, bottom: 40, left: 50},
+    width = 2000 - margin.left - margin.right,
+    height = 600 - margin.top - margin.bottom;
+//var variables=["temperature","mslp","pres","swflux"];
+var colors = ["#1ABC9C","#225ea8","#F1C40F","#ff5733","#FF00FF"];
 var parseDate = d3.time.format("%Y%m%d").parse;
 var date=new Date();
 date.setHours(0,0,0,0);
+var ref_date=new Date(date);
 var u_date=new Date(date);
 var dateOffset = 3*(24*60*60*1000);
 var minOffset=15*60000;
@@ -47,7 +66,7 @@ var x=d3.time.scale()
       .range([0,width]);
 
 var y= d3.scale.linear()
-      .range([height,0]);
+      .range([height,5]);
 
 var color = d3.scale.category10();
 
@@ -59,103 +78,205 @@ var xAxis = d3.svg.axis()
 var yAxis = d3.svg.axis()
     .scale(y)
     .orient("left");
-
+var minmax_values=[];
+var units=[];
 var line = d3.svg.line()
     .x(function(d) { index++; if(index>0) u_date.setTime(u_date.getTime()+minOffset); return x(u_date); })
-    .y(function(d) { return y(d.val); })
+    .y(function(d) { if(d.val==9999) return y(0); return y(d.val); })
     .interpolate("linear");
 
-var svg = d3.select("body").append("svg")
+/*var svg = d3.select("#plot").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");*/
+var svg;
+var latlon;
+var variables=[];
+var vnames=[];
+var curVariable;
+var vnames=[];
+          $.ajax({
+          url: 'Vfile.xml',
+          type: 'GET',
+          dataType: 'xml',
+          timeout: 1000,
+          error: function(){
+              alert('Error loading XML document');
+          },
+          success: function(xml){
+              var xmlElement=xml.getElementsByTagName("variable");
+              for (i=0;i<xmlElement.length;i++)
+              {
+                  variables.push(xmlElement[i].childNodes[0].nodeValue);
+                  //alert(xmlElement[i].childNodes[0].nodeValue);
+              }
+              var xmlElement=xml.getElementsByTagName("name");
+              for (i=0;i<xmlElement.length;i++)
+              {
+                  vnames.push(xmlElement[i].childNodes[0].nodeValue);
+                  //alert(xmlElement[i].childNodes[0].nodeValue);
+              }
+              curVariable=variables[0];
+              datasetButtons();
+              var a = window.location.toString();
+              latlon = a.substring(a.indexOf("=")+1);
+              alert(vnames);
+              alert(variables);
+              graphPlot("all");
+                
+          }
+      });
 
-var a = window.location.toString();
-var latlon = a.substring(a.indexOf("=")+1);
+var getGraph=function (g_variable){
+      d3.json("Stats/"+g_variable+"_20160621.json", function(error, d) {
+                    if (error) throw error;
+                   
+                    var days=[];
+                    var hour=[];
+                    var val=[];
+                    var minmax=[];
+                    var variable;
+                    var unit;
+                    //alert(d.name);
+                    //alert(d.date+d.variable);
+                    variable=d.variable;
+                    units.push(d.unit);
+                    minmax_values.push(d.minmax);
+                    minmax=d.minmax;
+                    //alert(minmax);
+                    for(i=0;i<d.locations.length;i++)
+                    {
+                       var latlonvar=d.locations[i].latitude+""+d.locations[i].longitude;
+                       console.log(latlon);
+                       if(latlon==latlonvar)
+                       {
 
-    d3.json("temperature_20160616.json", function(error, d) {
-          if (error) throw error;
-         
-          var days=[];
-          var hour=[];
-          var val=[];
-          var minmax=[];
-          var variable;
-          var unit;
-          //alert(d.date+d.variable);
-          variable=d.variable;
-          unit=d.unit;
-          minmax=d.minmax;
-          //alert(minmax);
-          for(i=0;i<d.locations.length;i++)
+                            val=d.locations[i].values;
+                           /*for(j=0;j<d.locations[i].values.length;j++)
+                           {
+                                //console.log(d.locations[i].values[j]);
+                                days.push(d.locations[i].values[j][0]);
+                                hour.push(d.locations[i].values[j][1]);
+                                //if(j>0)
+                                val.push(d.locations[i].values[j][2]);
+                                //else
+                                  //val.push(minmax[0]-1);
+
+                          }
+                          alert(days);
+                          alert(hour);
+                          alert(val);*/
+                      }
+                   }
+
+
+                    
+                
+            //color.domain(d3.keys(data[0]).filter(function(key) { return key !== "date"; }));
+
+            
+
+
+              var newArray = val.map(function(d){
+                return { 'day' : d[0], 'hour' : d[1], 'val' : d[2] };
+              });
+              console.log(newArray);
+             
+           
+
+
+            y.domain([minmax[0],minmax[1]]);
+
+
+
+            svg.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + (height +24) +")")
+                .call(xAxis);
+
+            svg.append("g")
+                .attr("class", "y axis")
+                .call(yAxis)
+                .append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 6)
+                .attr("dy", ".71em")
+                .style("text-anchor", "end")
+                .text("Temperature (ºF)");
+           
+            svg.append("path")
+                .datum(d.name)
+                .attr("d",function(d){ alert(d); return line(newArray);})
+                .attr("class","line")
+                .style("stroke", function(d) {  console.log(d); return colors[variables.indexOf(d)]; })
+                .style("fill", function(d) {  console.log(d); return colors[variables.indexOf(d)]; })
+                .style("fill-opacity", .5);
+
+
+           //     alert(index);
+           //    alert(u_date);
+                index=-1;
+                u_date.setTime(ref_date);
+                });
+}
+
+var graphPlot= function(w_var){
+
+       svg = d3.select("#plot").append("svg")
+                  .attr("width", width + margin.left + margin.right)
+                  .attr("height", height + margin.top + margin.bottom)
+                  .append("g")
+                  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+          if(w_var=="all")
           {
-             var latlonvar=d.locations[i].latitude+""+d.locations[i].longitude;
-             console.log(latlon);
-             if(latlon==latlonvar)
-             {
+              for(j=0;j<variables.length;j++)
+              {
+                   getGraph(variables[j]);               
 
-                  val=d.locations[i].values;
-                 /*for(j=0;j<d.locations[i].values.length;j++)
-                 {
-                      //console.log(d.locations[i].values[j]);
-                      days.push(d.locations[i].values[j][0]);
-                      hour.push(d.locations[i].values[j][1]);
-                      //if(j>0)
-                      val.push(d.locations[i].values[j][2]);
-                      //else
-                        //val.push(minmax[0]-1);
+              }
+          }
+          else
+          {
+            getGraph(w_var);
+          }
+      }
+function datasetButtons(){
 
-                }
-                alert(days);
-                alert(hour);
-                alert(val);*/
-            }
-         }
+      var datasetpicker = d3.select("#dataset-picker").selectAll(".dataset-button")
+        .data(variables);
 
+      datasetpicker.enter()
+        .append("input")
+        .attr("value", function(d){ var n = variables.indexOf(d);
+                                    var name=vnames[n];
+                                    //alert(n);
+                                      return name; })
+        .attr("type", "button")
+        .attr("class","button")
+        .style("background-color", function(d) {  console.log(d); return colors[variables.indexOf(d)]; })
+        .attr("x",function(d,i){  return 30*(i%4);   })
+        .attr("y",function(d,i){ return 50+(30*(i/4));})
+        .on("click", function(d) {
+         document.getElementById("plot").innerHTML = "";
+         graphPlot(d);
 
-          
+        });
       
-  //color.domain(d3.keys(data[0]).filter(function(key) { return key !== "date"; }));
+      datasetpicker.append("input")
+        .attr("type", "button")
+        .attr("class","button")
+        .style("background-color", function(d) {  console.log(d); return colors[variables.indexOf(d)]; })
+        .attr("x",function(d,i){  return 30*(i%4);   })
+        .attr("y",function(d,i){ return 50+(30*(i/4));})
+        .on("click", function(d) {
+         document.getElementById("plot").innerHTML = "";
+         graphPlot(d);
 
-  /*data.forEach(function(d) {
-    d.date = parseDate(d.date);
-  });*/
+        });
 
-  /*var cities = color.domain().map(function(name) {
-    return {
-      name: name,
-      values: data.map(function(d) {
-        return {date: d.date, temperature: +d[name]};
-      })
-    };
-  });*/
 
-    var newArray = val.map(function(d){
-      return { 'day' : d[0], 'hour' : d[1], 'val' : d[2] };
-    });
-    console.log(newArray);
- 
-  y.domain([minmax[0],minmax[1]]);
-
-  svg.append("g")
-      .attr("class", "x axis")
-      .attr("transform", "translate(0," + height + ")")
-      .call(xAxis);
-
-  svg.append("g")
-      .attr("class", "y axis")
-      .call(yAxis)
-      .append("text")
-      .attr("transform", "rotate(-90)")
-      .attr("y", 6)
-      .attr("dy", ".71em")
-      .style("text-anchor", "end")
-      .text("Temperature (ºF)");
- 
-      svg.append("path")
-      .attr("d",function(d){ console.log(d); return line(newArray);})
-      .attr("class","line");
+      }
 
   /*var city = svg.selectAll(".city")
       .data(val);
@@ -171,6 +292,7 @@ var latlon = a.substring(a.indexOf("=")+1);
       .attr("x", 3)
       .attr("dy", ".35em")
       .text(function(d) { return d; });*/
-});
+
+
 
 </script>
