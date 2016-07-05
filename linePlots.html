@@ -22,10 +22,26 @@ body {
   opacity: 10%;
   stroke-width: 1.5px;
 }
+.line_b {
+  opacity: 10%;
+  stroke-width: 2.5px;
+}
 #dataset-picker{
   margin-top: 40px;
   text-align: center;
 
+}
+.title{
+  color:#1F618D;
+  font-family: "Palantino Linotype";
+  font-size: 25px;
+  font-weight: bolder;
+}
+.vartitle{
+  color:#273746;
+  font-family: "Palantino Linotype";
+  font-size: 20px;
+  font-weight: bolder;
 }
 .button{
         border-radius: 8px;
@@ -38,6 +54,8 @@ body {
 
 </style>
 <body>
+  <div><p class="title">Graphs- Three Day Forecast</p></div>
+  <div id="varhead"></div>
   <div id="plot"></div>
   <br><br>
   <div id="dataset-picker">
@@ -73,6 +91,7 @@ var color = d3.scale.category10();
 var xAxis = d3.svg.axis()
     .scale(x)
     .ticks(d3.time.hours, 1)
+    .tickFormat(d3.time.format("%H"))
     .orient("bottom");
 
 var yAxis = d3.svg.axis()
@@ -85,12 +104,9 @@ var line = d3.svg.line()
     .y(function(d) { if(d.val==9999) return y(0); return y(d.val); })
     .interpolate("linear");
 
-/*var svg = d3.select("#plot").append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-    .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");*/
+
 var svg;
+var svg1;
 var latlon;
 var variables=[];
 var vnames=[];
@@ -121,14 +137,15 @@ var vnames=[];
               datasetButtons();
               var a = window.location.toString();
               latlon = a.substring(a.indexOf("=")+1);
-              alert(vnames);
-              alert(variables);
+              //alert(vnames);
+              //alert(variables);
               graphPlot("all");
                 
           }
       });
 
 var getGraph=function (g_variable){
+  var unit;
       d3.json("Stats/"+g_variable+"_20160621.json", function(error, d) {
                     if (error) throw error;
                    
@@ -137,7 +154,7 @@ var getGraph=function (g_variable){
                     var val=[];
                     var minmax=[];
                     var variable;
-                    var unit;
+                    //var unit;
                     //alert(d.name);
                     //alert(d.date+d.variable);
                     variable=d.variable;
@@ -188,11 +205,27 @@ var getGraph=function (g_variable){
 
             y.domain([minmax[0],minmax[1]]);
 
+            svg.append("line")
+              .attr("class", "line_b")
+              .attr("x1", 0)
+              .attr("x2", width - 60)
+              .attr("y1", height+10)
+              .attr("y2", height+10)
+              .attr("stroke","#273746")
+              .style("stroke-opacity", 1);
 
+
+            svg1.append("path")
+                .datum(d.name)
+                .attr("d",function(d){ return line(newArray);})
+                .attr("class","line")
+                .style("stroke", function(d) {  console.log(d); return colors[variables.indexOf(d)]; })
+                .style("fill", function(d) {  console.log(d); return colors[variables.indexOf(d)]; })
+                .style("fill-opacity", .5);
 
             svg.append("g")
                 .attr("class", "x axis")
-                .attr("transform", "translate(0," + (height +24) +")")
+                .attr("transform", "translate(5," + height +")")
                 .call(xAxis);
 
             svg.append("g")
@@ -200,19 +233,20 @@ var getGraph=function (g_variable){
                 .call(yAxis)
                 .append("text")
                 .attr("transform", "rotate(-90)")
-                .attr("y", 6)
+                .attr("y", (margin.top+5))
+                .attr("x",5)
                 .attr("dy", ".71em")
                 .style("text-anchor", "end")
                 .text("Temperature (ºF)");
            
-            svg.append("path")
-                .datum(d.name)
-                .attr("d",function(d){ alert(d); return line(newArray);})
-                .attr("class","line")
-                .style("stroke", function(d) {  console.log(d); return colors[variables.indexOf(d)]; })
-                .style("fill", function(d) {  console.log(d); return colors[variables.indexOf(d)]; })
-                .style("fill-opacity", .5);
+           
+            
 
+            svg.append("p")
+                .text("unit: "+unit)
+                .attr("transform", "rotate(-90)")
+                .attr("y",30)
+                .attr("x",0);
 
            //     alert(index);
            //    alert(u_date);
@@ -222,12 +256,25 @@ var getGraph=function (g_variable){
 }
 
 var graphPlot= function(w_var){
+        var text;
+        if (w_var=="all")
+            text="All Variables";
+        else
+            {
+              text=vnames[variables.indexOf(w_var)];
+            }
+        d3.select("#varhead").append("p").text("Variable: "+text).attr("class","vartitle");
 
        svg = d3.select("#plot").append("svg")
                   .attr("width", width + margin.left + margin.right)
                   .attr("height", height + margin.top + margin.bottom)
                   .append("g")
                   .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+      svg1 = svg.append("svg")
+                  .attr("width", width + margin.left + margin.right)
+                  .attr("height", height)
+                  .append("g");
+
           if(w_var=="all")
           {
               for(j=0;j<variables.length;j++)
@@ -259,39 +306,27 @@ function datasetButtons(){
         .attr("y",function(d,i){ return 50+(30*(i/4));})
         .on("click", function(d) {
          document.getElementById("plot").innerHTML = "";
+         document.getElementById("varhead").innerHTML = "";
+
          graphPlot(d);
 
         });
       
-      datasetpicker.append("input")
+      d3.select("#dataset-picker").append("input")
+        .attr("value","ALL")
         .attr("type", "button")
         .attr("class","button")
-        .style("background-color", function(d) {  console.log(d); return colors[variables.indexOf(d)]; })
-        .attr("x",function(d,i){  return 30*(i%4);   })
-        .attr("y",function(d,i){ return 50+(30*(i/4));})
         .on("click", function(d) {
+         document.getElementById("varhead").innerHTML = "";
          document.getElementById("plot").innerHTML = "";
-         graphPlot(d);
+         graphPlot("all");
 
         });
 
 
       }
 
-  /*var city = svg.selectAll(".city")
-      .data(val);
-
-      city.enter().append("circle")
-      .attr("r",2)
-      .attr("x", function(d,i) { return hour[i]+(96+days[i]); } )
-      .attr("y",function(d,i){return val[i];});
-
-      city.exit().remove();*/
-  /*city.append("text")
-      .attr("transform", function(d,i) { return "translate(" + x(hour[i]*days[i]) + "," + y(d) + ")"; })
-      .attr("x", 3)
-      .attr("dy", ".35em")
-      .text(function(d) { return d; });*/
+  
 
 
 
