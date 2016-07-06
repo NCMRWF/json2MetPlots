@@ -33,8 +33,9 @@ body {
 }
 .title{
   color:#1F618D;
+  text-align: center;
   font-family: "Palantino Linotype";
-  font-size: 25px;
+  font-size: 30px;
   font-weight: bolder;
 }
 .vartitle{
@@ -51,10 +52,30 @@ body {
         font-weight: bolder;
         color:#FBFCFC;
       }
+.formText{
+        text-align: right;
+        font-size: 20px;
+        color:#273746;
+        font-weight: bold;
+        font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ; 
+      }
+#dateList{
+        text-align: right;
+        font-size: 15px;
+        font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ; 
+      }
 
 </style>
 <body>
   <div><p class="title">Graphs- Three Day Forecast</p></div>
+  <div id="dateOptions">
+          <p class="formText">Choose Date:</p>
+          <form class="formText">
+            <select id="dateList" onchange="dateChange()" name="dates">
+            </select>
+            <br><br>
+          </form>
+  </div>
   <div id="varhead"></div>
   <div id="plot"></div>
   <br><br>
@@ -76,6 +97,31 @@ var ref_date=new Date(date);
 var u_date=new Date(date);
 var dateOffset = 3*(24*60*60*1000);
 var minOffset=15*60000;
+
+/************************* for date drop down list****************************************/
+var x = document.getElementById("dateList");
+var k=0;
+var option = document.createElement("option");
+var date1=new Date();
+var dateOffset1 = (24*60*60*1000);
+var dateString=[];     
+var curDate;      
+      
+      dateString[0]=date1.getFullYear()+date.getMonth()+date.getDate();
+      option.text=date1.toDateString();
+      x.add(option);
+      for(k=0;k<4;k++)
+      {
+        var option = document.createElement("option");
+        date1.setTime(date1.getTime() - dateOffset1);
+        option.text=date1.toDateString();
+        x.add(option);
+      }
+      /*dateString=["20160621","20160620","20160619","20160618","20160617"];
+      curDate=dateString[0];*/
+/************************************* dates initialized***************************************/
+
+
 date.setTime(date.getTime() + dateOffset);
 /*var x = d3.time.scale()
     .range([0, width]);*/
@@ -135,20 +181,22 @@ var vnames=[];
               }
               curVariable=variables[0];
               datasetButtons();
+              dateString=["20160621","20160620","20160619","20160618","20160617"];
+              curDate=dateString[0];
               var a = window.location.toString();
               latlon = a.substring(a.indexOf("=")+1);
               //alert(vnames);
               //alert(variables);
-              graphPlot("all");
+              graphPlot("all",curDate);
                 
           }
       });
 
-var getGraph=function (g_variable){
+var getGraph=function (g_variable,g_date){
   var unit;
-      d3.json("Stats/"+g_variable+"_20160621.json", function(error, d) {
+      d3.json("Stats/"+g_variable+"_"+g_date+".json", function(error, d) {
                     if (error) throw error;
-                   
+                    
                     var days=[];
                     var hour=[];
                     var val=[];
@@ -242,7 +290,7 @@ var getGraph=function (g_variable){
                 });
 }
 
-var graphPlot= function(w_var){
+var graphPlot= function(w_var,g_date){
         var text;
         if (w_var=="all")
             text="All Variables";
@@ -293,7 +341,7 @@ var graphPlot= function(w_var){
 
               for(j=0;j<variables.length;j++)
               {
-                   getGraph(variables[j]);               
+                   getGraph(variables[j],g_date);               
 
               }
           }
@@ -303,7 +351,7 @@ var graphPlot= function(w_var){
             var m_index=variables.indexOf(w_var);
             for(j=0;j<variables.length;j++)
               {
-                   getGraph(variables[j]);               
+                   getGraph(variables[j],g_date);               
 
               }
             y.domain([minmax_values[m_index][0],minmax_values[m_index][1]]);
@@ -324,7 +372,6 @@ var graphPlot= function(w_var){
               .attr("dy", "1em")
               .style("text-anchor", "middle")
               .text(units[m_index]);
-                  //getGraph(w_var);
 
           }
       }
@@ -348,7 +395,7 @@ function datasetButtons(){
          document.getElementById("plot").innerHTML = "";
          document.getElementById("varhead").innerHTML = "";
 
-         graphPlot(d);
+         graphPlot(d,curDate);
 
         });
       
@@ -359,12 +406,24 @@ function datasetButtons(){
         .on("click", function(d) {
          document.getElementById("varhead").innerHTML = "";
          document.getElementById("plot").innerHTML = "";
-         graphPlot("all");
+         graphPlot("all",curDate);
 
         });
 
 
       }
+
+function dateChange(){
+
+          //var date=document.getElementById("dateList").value;
+          var list=document.getElementById("dateList");
+          var index=list.selectedIndex;
+          curDate=dateString[index];
+          document.getElementById("varhead").innerHTML = "";
+          document.getElementById("plot").innerHTML = "";
+          graphPlot("all",curDate);
+          //to load whole new files of that particular date.
+        }
 
   
 
