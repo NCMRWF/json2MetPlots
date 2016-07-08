@@ -59,19 +59,18 @@
   			}*/
         #map1{
           font-weight: bold;
-          color:#660000;
+          color:#D6EAF8;
           display: inline-block;
           float:left;
-          width:400px;
-          height:430px;
+          width:650px;
+          height:530px;
           margin-top:10px;
         }
         #plots{
           position:absolute;
-          margin-left: 150px;
+          margin-left: 10px;
           height:550px;
           width:900px;
-          margin-top: 30px;
           text-align:right;
           display: inline-block;
         }
@@ -79,6 +78,30 @@
           margin-top: 50px;
           text-align:left;
         }
+        .formText{
+        text-align: left;
+        font-size: 20px;
+        color:#273746;
+        font-weight: bold;
+        display: inline;
+        font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ; 
+      }
+       #urlList{
+        text-align: left;
+        font-size: 20px;
+        color:#273746;
+        font-weight: bold;
+        font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ; 
+       }
+       #subtitle{
+        text-align: center;
+        font-size: 30px;
+        color:#FFFDFF;
+        background-color:#273746;
+        height:60px;
+        padding-top: 20px;
+        font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ;
+       }
   			
   </style>
 </head>
@@ -87,21 +110,36 @@
 
 
 	
-
-
+       
+          <div id="subtitle">Glimpse of Weather Conditions in the prominent states of India</div><br><br>
+          <br><br>
+          <div id="options">
+            <p class="formText">View:
+            <form class="formText">
+              <input type="radio" name="interval" value="1" onClick="urlChange(0)"> Line Plots View<t>
+              <input type="radio" name="interval" value="2" onClick="urlChange(1)"> Calendar View <t>
+              <br> 
+            </form></p>
+            </div>
 					<div id = "map1"> 
-						<div id="subtitle">Glimpse of Weather Conditions in the prominent states of India</div>
 					</div>
-					<div id="plots"><iframe src="" name="iframe_a" width="900px" height="550px" frameBorder="0" ></iframe></div>
-          <!-- <div id="nplots"><iframe src="calenderView3.html" id="frameId" name="iframe_b" width="100%" height="750px" ></iframe></div> -->
+
+					<div id="plots"><iframe src="" name="iframe_a" width="1200px" height="1150px" frameBorder="0" ></iframe></div>
+          <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+          <div id="lineplots"><iframe src="" name="iframe_b" width="100%" height="1150px" frameBorder="0" ></iframe></div>
+          
 				     		   
 	  
 
 <script>
+var dest_URL=["linePlots.html","calendarViewForecast.html"];
+var destFrames=["iframe_a","iframe_a"];
+var destURL=dest_URL[0];
+var curFrame=destFrames[0];
 var places = [
               {
                 name: "Delhi",
-        nam: "calenderViewfor26June2016.html",
+        nam: "linePlots05July_Opacity.html",
         latlon: "28.0N,75.0E",
                 location: {
                   latitude: 28.28,
@@ -128,8 +166,8 @@ var places = [
                 name: "Gandhinagar",
         nam: "calenderView2.html",
                 location: {
-                  latitude:23.2156,
-                  longitude:  72.6369
+                  latitude:21,
+                  longitude:  70
                 }
               },
               {
@@ -329,7 +367,7 @@ var places = [
                 }
               }
             ]
-var width = 960,
+var width = 1060,
     height = 600;
 var color= d3.scale.ordinal()
 			.domain([1,2,3,4,5,6,7,8,9])
@@ -368,10 +406,10 @@ d3.json("test.json", function(error, swiss) {
 							.attr('class', 'd3-tip')
 							.offset([-5, 0])
 							.style("left", "300px")
-							.style("top", "400px")
+							.style("top", "150px")
 							.html(function(d) {
                 //alert("tip !");
-								return ("<a href="+d.nam+"?latlon="+d.location.latitude+d.location.longitude+" target='iframe_a'>"+d.name +"</a>");
+								return ("<a href="+destURL+"?latlon="+d.location.latitude+d.location.longitude+" target="+curFrame+">"+d.name +"</a>");
                 
 							})
 							
@@ -397,8 +435,15 @@ svg.selectAll(".pin")
 				var areas= group.append("path")
 					.attr("d", path)
 					.attr("class", "area")
-				 .attr("fill","#98EDF1");
+				 .attr("fill","#D6EAF8");
 						
 });
+function urlChange(index){
+          
+          /*var list=document.getElementById("urlList");
+          var index=list.selectedIndex;*/
+          destURL=dest_URL[index];
+          curFrame=destFrames[index];
+        }
 </script>
 
