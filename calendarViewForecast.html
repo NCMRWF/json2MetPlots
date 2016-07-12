@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- implemented different legends min max (global- location wise)-->
+<!-- most recent version-->
 <meta charset="utf-8">
 <html>
   <head>
@@ -10,7 +10,7 @@
       }
 
       text.mono {
-        font-size: 9pt;
+        font-size: 12pt;
         font-family: Consolas, courier;
         fill: #aaa;
       }
@@ -56,11 +56,13 @@
 
       text.axis-workweek {
         fill: #000;
+        font-size: 12pt;
         font-weight: bold;
       }
 
       text.axis-worktime {
         fill: #000;
+        font-size: 12pt;
         font-weight: bold;
       }
       .legendsText {
@@ -105,25 +107,28 @@
       }
       .paraText{
         color:#660000;
-        font-size: 15px;
+        font-size: 20px;
         font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ; 
       }
       .formText{
         text-align: center;
         color:#660000;
-        font-size: 15px;
+        font-size: 20px;
         font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ; 
       }
       .heading{
         text-align: center;
         color:#660000;
         font-weight: bold;
-        font-size: 20px;
+        font-size: 25px;
         font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ; 
       }
       #dateList{
         text-align: right;
-        font-size: 15px;
+        font-size: 20px;
+        width:250px;
+        color:#660000;
+        border-radius: 4px;
         font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ; 
       }
     </style>
@@ -145,7 +150,6 @@
     </div>
 
     <div id="dateOptions">
-          <p class="formText">Choose Date:</p>
           <form class="formText">
             <select id="dateList" onchange="dateChange()" name="dates">
             </select>
@@ -167,7 +171,7 @@
     </div>
     <div id="legends">
     </div>
-    
+    <br><br>
     <div id="dataset-picker">
     </div>
     <!-- <div id="nplots"><iframe src="calenderView3.html" name="iframe_b" width="100%" height="750px" ></iframe></div> -->
@@ -247,7 +251,7 @@
       {
         
         d3.select("#chart").append("p").text("Variable: "+vnames[variables.indexOf(curVariable)]).attr("class","paraText");
-      var margin = { top: 50, right: 0, bottom: 50, left: 30 },
+      var margin = { top: 50, right: 0, bottom: 70, left: 40 },
           width = 960 - margin.left - margin.right,
           height = 220 - margin.top - margin.bottom,
           gridSize = Math.floor((width*interval) / 96),
@@ -258,7 +262,7 @@
           times = [];
 
           if (interval==12)
-            gridSize=gridSize/2;
+            gridSize=gridSize/1.95;
           if (interval==8)
             gridSize=gridSize/1.5;
           if(interval<4)
@@ -368,7 +372,7 @@
             }
         function disp() {
           /*d3.select("#chart").append("p").text("Variable:  "+curVariable).style("font-size","20px").style("align","center");*/
-          var margin = { top: 50, right: 0, bottom: 100, left: 30 },
+          var margin = { top: 50, right: 0, bottom: 70, left: 40 },
           width = 960 - margin.left - margin.right,
           height = 220 - margin.top - margin.bottom,
           gridSize = Math.floor((width*interval) / 96),
@@ -386,7 +390,7 @@
           else 
             colorScale.domain([Math.min.apply(null,val),Math.max.apply(null,val.slice(10))]);
           if (interval==12)
-            gridSize=gridSize/2;
+            gridSize=gridSize/1.95;
           if (interval==8)
             gridSize=gridSize/1.5;
           if(interval<4)
@@ -428,12 +432,12 @@
           cards.exit().remove();
           
           var legsvg = d3.select("#legends").append("svg")
-          .attr("width", width + margin.left + margin.right)
+          .attr("width", gridSize*12)
           .attr("height", 5 + margin.top + margin.bottom)
           .append("g")
           .attr("transform", "translate(" + margin.left + ",0)");
           var legend = legsvg.selectAll(".legend")
-              .data(colorScale.quantiles().concat(minmax[1]), function(d) { return d; });
+              .data([minmax[0]].concat(colorScale.quantiles()), function(d) { return d; });
           console.log("color quantiles");
           console.log(colorScale.quantiles());
           legend.enter().append("g")
@@ -441,22 +445,25 @@
 
           legend.append("rect")
             .attr("x", function(d, i) { if(interval<4)return legendElementWidth * i; else return gridSize*i; })
-            .attr("y", height)
+            .attr("y", margin.top)
             .attr("width", function(d,i) { if(interval<4) return legendElementWidth; else return gridSize;})
             .attr("height", function(d,i){ if (interval<4) return legendElementWidth / 2; else return gridSize/2;})
             .style("fill", function(d, i) { return colors[i]; });
 
           legend.append("text")
-            .text(function(d) { return "≥ " + d.toFixed(2); })
+            .text(function(d) { if(minmax[1]-minmax[0]>=8) 
+                                  return "  > " +Math.round(d); 
+                                else 
+                                  return "  > " +d.toFixed(2);})
             .attr("class","legendsText")
             .attr("x", function(d, i) { if(interval<4)return legendElementWidth * i; else return gridSize*i;  })
-            .attr("y", function(d,i){ if (interval<4) return height + legendElementWidth-5; else return height + gridSize-5;});
+            .attr("y", function(d,i){ if (interval<4) return margin.top + legendElementWidth-5; else return margin.top + gridSize-5;});
           
 
           legend.append("text")
             .text("units in "+unit)
             .attr("x", gridSize * 2 )
-            .attr("y", function(d,i){ if (interval<4) return height + legendElementWidth+15; else return height + gridSize+15;});
+            .attr("y", function(d,i){ if (interval<4) return margin.top + legendElementWidth+10; else return margin.top + gridSize+10;});
           
           legend.exit().remove();
 
@@ -477,12 +484,7 @@
 
         } 
       };
-     // var a = window.location.toString();
-      //var latlon = a.substring(a.indexOf("=")+1);
-      //alert(latlon);
-     // heatmapChart("temperature_"+dateString[0],latlon,4);
-      //heatmapChart(curVariable+"_"+dateString[0]+".json",latlon,4);
-      //appending two buttons on the page for each dataset to be displayed
+     
       function datasetButtons(){
 
       var datasetpicker = d3.select("#dataset-picker").selectAll(".dataset-button")
@@ -549,10 +551,10 @@
         {
           //d3.select("#ZoomChart").append("p").text("More detailed readings ").attr("class","ZoomparaText");
            d3.select("#ZoomChart").append("p").text("Variable: "+vnames[variables.indexOf(curVariable)]).attr("class","paraText");
-        var margin = { top: 50, right: 30, bottom: 100, left: 30 },
-          width = 600 - margin.left - margin.right,
-          height = 200 - margin.top - margin.bottom,
-          gridSize = Math.floor(width / 11),
+        var margin = { top: 20, right: 0, bottom: 70, left: 40 },
+          width = 760 - margin.left - margin.right,
+          height = 220 - margin.top - margin.bottom,
+          gridSize = Math.floor(width / 12),
           legendElementWidth = gridSize*1.5,
           buckets = 9,
           colors = ["#081d58","#253494","#225ea8","#1d91c0","#ffff00","#ffc300","#ff5733","#c70039"]; // alternatively colorbrewer.YlGnBu[9]
@@ -595,7 +597,6 @@
             .text(function (d) { return d; })
             .attr("x", 0)
             .attr("y", function (d, i) { return i * gridSize; })
-            .style("font-size","12px")
             .style("text-anchor", "end")
             .attr("transform", "translate(-4," + gridSize / 1.5 + ")")
             .attr("class", function (d, i) { return "dayLabel mono axis axis-workweek"; });
@@ -606,7 +607,6 @@
             .text(function(d) { return d; })
             .attr("x", function(d, i) { return i*gridSize; })
             .attr("y", 0)
-            .style("font-size","12px")
             .style("text-anchor", "middle")
             .attr("transform", "translate(" + gridSize / 2 + ", -6)")
             .attr("class", function(d, i) { return "timeLabel mono axis axis-worktime"; });
@@ -688,7 +688,7 @@
               .attr("height", gridSize)
               .style("fill", colors[0]);
 
-          cards.transition().duration(1000)
+          cards.transition().duration(500)
               .style("fill", function(d) { if(d>minmax[1]) return "#FBFCFC"; else return colorScale(d); });
 
           cards.select("title").text(function(d) { return d; });
@@ -697,37 +697,41 @@
 
 
           var legsvg = d3.select("#legends").append("svg")
-          .attr("width", width + margin.left + margin.right)
+          .attr("width", gridSize*12)
           .attr("height", 5 + margin.top + margin.bottom)
           .append("g")
           .attr("transform", "translate(" + margin.left + ",0)");
           
 
           var legend = legsvg.selectAll(".legend")
-              .data(colorScale.quantiles().concat([minmax[1]]), function(d) { return d; });
+              .data([minmax[0]].concat(colorScale.quantiles()), function(d) { return d; });
           console.log("color quantiles");
           console.log(colorScale.quantiles());
           legend.enter().append("g")
               .attr("class", "legend");
 
           legend.append("rect")
-            .attr("x", function(d, i) { return legendElementWidth*i; })
-            .attr("y", height)
-            .attr("width", legendElementWidth)
+            .attr("x", function(d, i) { return gridSize*i; })
+            .attr("y", margin.top)
+            .attr("width", gridSize)
             .attr("height", function(d,i){  return gridSize/2;})
             .style("fill", function(d, i) { return colors[i]; });
 
           legend.append("text")
-            .text(function(d) { return "≥ " + d.toFixed(2); })
+            .text(function(d) {
+                                if(minmax[1]-minmax[0]>=8) 
+                                  return "  > " +Math.round(d); 
+                                else 
+                                  return "  > " +d.toFixed(2);  })
             .attr("class","legendsText")
-            .attr("x", function(d, i) {  return legendElementWidth*i;  })
-            .attr("y", function(d,i){ return height + gridSize-5;});
+            .attr("x", function(d, i) {  return gridSize*i;  })
+            .attr("y", function(d,i){ return margin.top + gridSize-5;});
           
 
           legend.append("text")
             .text("units in "+unit)
             .attr("x", gridSize * 2 )
-            .attr("y", function(d,i){ return height + gridSize+15;});
+            .attr("y", function(d,i){ return margin.top + gridSize+15;});
           
           legend.exit().remove();
 
@@ -744,7 +748,7 @@
               document.getElementById("ZoomChart").innerHTML = "";
               document.getElementById("legends").innerHTML = "";
               if(start>0)
-               createZoomChart(start-1,end-1,interval);
+               createZoomChart(start-11,end-11,interval);
              else
               createZoomChart(0,11,interval);});
 
@@ -756,10 +760,11 @@
             .on("click", function(d) {
               document.getElementById("ZoomChart").innerHTML = "";
               document.getElementById("legends").innerHTML = "";
-              if(end<95)
-               createZoomChart(start+1,end+1,interval);
+              var e=96/interval;
+              if(end<e-12)
+               createZoomChart(start+11,end+11,interval);
               else
-               createZoomChart(84,95,interval);
+               createZoomChart(e-12,e-1,interval);
 
         });
 
