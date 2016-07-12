@@ -103,6 +103,7 @@
         padding-top: 20px;
         font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ;
        }
+<<<<<<< HEAD
        #substations{
          font-weight: bold;
           color:#154360;
@@ -130,6 +131,8 @@
         width:650px;
         position: absolute;
        }
+=======
+>>>>>>> refs/remotes/origin/master
   			
   </style>
 </head>
@@ -140,7 +143,11 @@
 	
        
           <div id="subtitle">Glimpse of Weather Conditions in the prominent states of India</div><br><br>
+<<<<<<< HEAD
         
+=======
+          <br><br>
+>>>>>>> refs/remotes/origin/master
           <div id="options">
             <p class="formText">View:
             <form class="formText">
@@ -149,6 +156,7 @@
               <br> 
             </form></p>
             </div>
+<<<<<<< HEAD
           <div id="plots"><iframe src="" name="iframe_a" width="1200px" height="1150px" frameBorder="0" ></iframe></div>
 					<div id = "map1"> 
 					</div>
@@ -157,15 +165,31 @@
           <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
          <!--  <div id="lineplots"><iframe src="" name="iframe_b" width="100%" height="1150px" frameBorder="0" ></iframe></div> -->
            <div id="substations"></div>
+=======
+					<div id = "map1"> 
+					</div>
+
+					<div id="plots"><iframe src="" name="iframe_a" width="1200px" height="1150px" frameBorder="0" ></iframe></div>
+          <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+          <div id="lineplots"><iframe src="" name="iframe_b" width="100%" height="1150px" frameBorder="0" ></iframe></div>
+          
+>>>>>>> refs/remotes/origin/master
 				     		   
 	  
 
 <script>
+<<<<<<< HEAD
 var dest_URL=["linePlots10july.html","calenderView06July2016.html"];
 var destFrames=["iframe_a","iframe_a"];
 var destURL=dest_URL[0];
 var curFrame=destFrames[0];
 var curPlace;
+=======
+var dest_URL=["linePlots.html","calendarViewForecast.html"];
+var destFrames=["iframe_a","iframe_a"];
+var destURL=dest_URL[0];
+var curFrame=destFrames[0];
+>>>>>>> refs/remotes/origin/master
 var places = [
               {
                 name: "Delhi",
@@ -439,11 +463,16 @@ d3.json("test.json", function(error, swiss) {
 							.style("top", "150px")
 							.html(function(d) {
                 //alert("tip !");
+<<<<<<< HEAD
                 //dispSubstation(d.name,d.location.latitude,d.location.longitude);
 								/*return ("<a href="+destURL+"?latlon="+d.location.latitude+d.location.longitude+" target="+curFrame+">"+d.name +"</a>");*/
                 document.getElementById("substations").innerHTML="";
                 curPlace=d.name;
                 return ("<a href='javascript:;' onclick='dispSubstation("+d.location.latitude+","+d.location.longitude+")'>"+d.name +"</a>");
+=======
+								return ("<a href="+destURL+"?latlon="+d.location.latitude+d.location.longitude+" target="+curFrame+">"+d.name +"</a>");
+                
+>>>>>>> refs/remotes/origin/master
 							})
 							
 						svg.call(tip);
@@ -478,6 +507,7 @@ function urlChange(index){
           destURL=dest_URL[index];
           curFrame=destFrames[index];
         }
+<<<<<<< HEAD
 function dispSubstation(lat,lon){
       var height=400;
       var width=400;
@@ -516,5 +546,7 @@ function dispSubstation(lat,lon){
       });
       window.open(destURL+"?latlon="+lat+lon,curFrame);
 }
+=======
+>>>>>>> refs/remotes/origin/master
 </script>
 
