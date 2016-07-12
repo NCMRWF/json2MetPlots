@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- implemented different legends min max (global- location wise)-->
 <meta charset="utf-8">
 <html>
   <head>
@@ -14,6 +15,10 @@
         fill: #aaa;
       }
       #dateOptions {
+            position: relative;
+            float:right;
+        }
+      #legendOptions {
             position: relative;
             float:right;
         }
@@ -70,6 +75,9 @@
         background-color: #0097A7 ;
         color:#FBFCFC  ;
         text-align: center;
+      }
+      #legends{
+        width:970px;
       }
       .traverseButton{
         border-radius: 8px;
@@ -149,8 +157,17 @@
     </div>
     <div id="ZoomChart">
     </div>
+    <div id="legendOptions">
+          <p class="formText">Choose Legend Type:</p>
+          <form class="formText">
+            <input type="radio" name="legendType" value="1" onClick="changeLegend(1)"> National Legend<t>
+            <input type="radio" name="legendType" value="2" onClick="changeLegend(2)"> Region-Wise Legend<t>
+            <br><br>
+          </form>
+    </div>
     <div id="legends">
     </div>
+    
     <div id="dataset-picker">
     </div>
     <!-- <div id="nplots"><iframe src="calenderView3.html" name="iframe_b" width="100%" height="750px" ></iframe></div> -->
@@ -200,7 +217,7 @@
       var dateString=[];
       var days=[];
       var curDate;
-      
+      var curLegendOption=1;
       
       dateString[0]=date.getFullYear()+date.getMonth()+date.getDate();
       //option.text = date.getDate()+" - "+(date.getMonth()+1)+" - "+date.getFullYear();
@@ -363,8 +380,11 @@
           var tip;
           var factor=1;
           var colorScale = d3.scale.quantile()
-              .domain([minmax[0], minmax[1]])
               .range(colors);
+          if(curLegendOption==1)
+            colorScale.domain([minmax[0], minmax[1]]);
+          else 
+            colorScale.domain([Math.min.apply(null,val),Math.max.apply(null,val.slice(10))]);
           if (interval==12)
             gridSize=gridSize/2;
           if (interval==8)
@@ -501,6 +521,14 @@
             createZoomChart(13,25);*/
         }
 
+        function changeLegend(option){
+          document.getElementById("chart").innerHTML = "";
+          document.getElementById("legends").innerHTML = "";
+          document.getElementById("ZoomChart").innerHTML = "";
+          curLegendOption=option;
+          heatmapChart("Stats/"+curVariable+"_"+curDate+".json",latlon,4);
+        }
+
 
         function dateChange(){
           var date=document.getElementById("dateList").value;
@@ -634,14 +662,17 @@
           dispZoom();
           }); 
         function dispZoom() {
+          //alert(Math.min.apply(null,val)+"   "+Math.max.apply(null,val.slice(1)));
           var i=-1;
           var j=-1;
           var tip;
           var factor=1;
           var colorScale = d3.scale.quantile()
-              .domain([minmax[0], minmax[1]])
               .range(colors);
-  
+          if(curLegendOption==1)
+            colorScale.domain([minmax[0], minmax[1]]);
+          else 
+            colorScale.domain([Math.min.apply(null,val),Math.max.apply(null,val.slice(1))]);
           var cards = svgZoom.selectAll(".hour")
               .data(val);
 
