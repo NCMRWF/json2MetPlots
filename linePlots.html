@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- color coded and time axis corrected .( now to correct the display of y axis) -->
+<!-- implemented user defined legends -->
 <meta charset="utf-8">
 <style>
 
@@ -7,7 +7,7 @@ body {
   font: 10px sans-serif;
 }
 
-input {
+/*input {
     background: #fff;
     border: none;
     border-radius: 4px;
@@ -27,7 +27,7 @@ input {
     -webkit-transition: 0.2s;
     -moz-transition: 0.2s;
     transition: 0.2s;
-    }
+    }*/
 
 .axis path,
 .axis line {
@@ -71,11 +71,15 @@ input {
   width:100px;
   color: #505e67;
   font-size: 16px;
-  height: 40px;
+  height: 30px;
 }
 .subButton{
   background-color: #0097A7 ;
   color:#FBFCFC;
+  font-size: 20px;
+  border-radius: 4px;
+  padding: 4px;
+  width:150px;
 }
 .button{
         border-radius: 8px;
@@ -123,7 +127,19 @@ input {
         position: absolute;
 
       }
-
+#legendOptions {
+            position: relative;
+            float:right;
+      }
+.buttontext{
+  position: absolute;
+  display: inline;
+  font-size: 20px;
+  margin-left: 20px;
+  color: #0097A7;
+  font-weight: bold;
+  font-family: "Times New Roman";
+}
 </style>
 <body>
   <div><p class="title">Graphs- Three Day Forecast</p></div>
@@ -136,6 +152,14 @@ input {
   </div>
   <div id="varhead"></div>
   <div id="plot"></div>
+  <div id="legendOptions">
+          <p class="formText">Choose Legend Type:</p>
+          <form class="formText">
+            <input type="radio" name="legendType" value="1" onClick="changeLegend(1)"> National Legend<t>
+            <input type="radio" name="legendType" value="2" onClick="changeLegend(2)"> Region-Wise Legend<t>
+            <br><br>
+          </form>
+    </div>
   <div id="dataset-picker">
   <div id="daylist"></div></div>
   
@@ -207,6 +231,8 @@ var yAxis = d3.svg.axis()
     .orient("left");
 var minmax_values=[];
 var units=[];
+var reg_max=[],reg_min=[];
+var isUpdate=0;
 var line = d3.svg.line()
     .x(function(d) { index++; if(index>0) u_date.setTime(u_date.getTime()+minOffset); return x(u_date); })
     .y(function(d) { if(d.val==9999) return y(0); return y(d.val); })
@@ -214,14 +240,16 @@ var line = d3.svg.line()
 
 var gv="all";
 var def_day_no=0;
+var curLegendOption=1;
 var svg;
 var svg1;
 var path;
 var latlon;
 var variables=[];
-var vnames=[];
+var var_names=[];
 var curVariable;
 var vnames=[];
+
           $.ajax({
           url: 'Vfile.xml',
           type: 'GET',
@@ -272,9 +300,9 @@ var getGraph=function (g_variable,g_date,day_no){
                     //var unit;
                     //alert(d.name);
                     //alert(d.date+d.variable);
+
+
                     variable=d.variable;
-                    units.push(d.unit);
-                    minmax_values.push(d.minmax);
                     minmax=d.minmax;
                     //alert(minmax);
                     if(day_no>0){
@@ -296,6 +324,9 @@ var getGraph=function (g_variable,g_date,day_no){
                                 break;
                            }
                        }
+
+                        //getMinMax(val,d.name,d.minmax,d.unit);
+                     
                        //alert(val.length);
 
                     }
@@ -310,7 +341,21 @@ var getGraph=function (g_variable,g_date,day_no){
                               break;
                          }
                      }
-                    }
+                   }
+                   if(isUpdate<1)
+                   {
+                          var c=getCol(val,2);
+                          reg_max.push(Math.max.apply(null,c.slice(1)));
+                          reg_min.push(Math.min.apply(null,c));
+                          minmax_values.push(d.minmax);
+                          units.push(d.unit);
+                          //alert(minmax_values);
+                          var_names.push(d.name);
+                          if(reg_max.length==5)
+                            isUpdate=1;
+                  }
+
+                    
                     
 
 
@@ -326,10 +371,26 @@ var getGraph=function (g_variable,g_date,day_no){
               });
               console.log(newArray);
              
-           
-         
-          y.domain([minmax[0],minmax[1]]);
+          /*if(isUpdate==0)
+          {
+            //getMinMax(val,d.name,d.minmax,d.unit);
+              var c=getCol(val,2);
+            
+              reg_max.push(Math.max.apply(null,c.slice(1)));
+              reg_min.push(Math.min.apply(null,c));
+              minmax_values.push(d.minmax);
+              units.push(d.unit);
+              alert(d.name);
+          } */
 
+          if(curLegendOption==1)
+             y.domain([minmax[0],minmax[1]]);
+         
+          else
+          {
+            var c=var_names.indexOf(d.name);
+            y.domain([reg_min[c],reg_max[c]]);
+          }
 
            
 
@@ -453,17 +514,22 @@ var graphPlot= function(w_var,g_date,day_no){
                    getGraph(variables[j],g_date,day_no);               
 
               }
+              
           }
           else
           {
             gv=w_var;
-            var m_index=variables.indexOf(w_var);
+            var m_index=var_names.indexOf(w_var);
             for(j=0;j<variables.length;j++)
               {
                    getGraph(variables[j],g_date,day_no);               
 
               }
-            y.domain([minmax_values[m_index][0],minmax_values[m_index][1]]);
+            if(curLegendOption==1)
+              y.domain([minmax_values[m_index][0],minmax_values[m_index][1]]);
+            else          
+              y.domain([reg_min[m_index],reg_max[m_index]]);
+
             svg.append("g")
                 .attr("class", "y axis")
                 .call(yAxis)
@@ -493,7 +559,11 @@ var graphPlot= function(w_var,g_date,day_no){
                       .attr("class","subButton")
                       .attr("type","button")
                       .attr("value","change opacity (0-0.45)")
-                      .on("click",function(){update();}); 
+                      .on("click",function(){update();});
+                     d3.select("#plot")
+                     .append("p")
+                     .attr("class","buttontext")
+                     .text("for viewing just the selected variable enter opacity value as 0"); 
 
           }
           /*var slsvg = svg.append("svg")
@@ -606,9 +676,29 @@ function dayWiseView(day_no){
           document.getElementById("plot").innerHTML = "";
           graphPlot(curVariable,curDate,def_day_no);
 }
-
+ function changeLegend(option){
+          document.getElementById("varhead").innerHTML = "";
+          document.getElementById("plot").innerHTML = "";
+          curLegendOption=option;
+          graphPlot(curVariable,curDate,def_day_no);
+        }
   
-
-
+function getCol(matrix, col){
+       var column = [];
+       for(var i=0; i<matrix.length; i++){
+          column.push(matrix[i][col]);
+       }
+       return column;
+    }
+function getMinMax(val_arr,var_name,minmax,unit)
+{
+             alert(var_name);
+             var c=getCol(val_arr,2);
+            
+              reg_max.push(Math.max.apply(null,c.slice(1)));
+              reg_min.push(Math.min.apply(null,c));
+              minmax_values.push(minmax);
+              units.push(unit);
+}
 
 </script>
