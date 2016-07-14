@@ -110,6 +110,11 @@
         font-size: 20px;
         font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ; 
       }
+      #varname{
+        display: inline;
+        position: absolute;
+        text-align: left;
+      }
       .formText{
         text-align: center;
         color:#660000;
@@ -124,6 +129,7 @@
         font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ; 
       }
       #dateList{
+        display: inline;
         text-align: right;
         font-size: 20px;
         width:250px;
@@ -136,9 +142,10 @@
     <script src="http://d3js.org/d3.v3.js"></script>
   </head>
   <body>
-    <p class="heading"> Forecast for next three days</p>        
-    <div id="options">
-      <p class="formText">Please check the required interval you want to see</p>
+    <p class="heading"> Forecast for next three days</p> 
+    <div id= "varname"></div>       
+    <div class="formText">
+      Please check the required interval you want to see
            <form class="formText">
             <input type="radio" name="interval" value="1" onClick="callChart(1)"> 15 min<t>
             <input type="radio" name="interval" value="2" onClick="callChart(2)"> 30 min<t>
@@ -147,16 +154,16 @@
             <input type="radio" name="interval" value="12" onClick="callChart(12)"> 3 hours<br>
            
           </form> 
-    </div>
+    </div><br><br>
 
     <div id="dateOptions">
-          <form class="formText">
+          <form >
             <select id="dateList" onchange="dateChange()" name="dates">
             </select>
             <br><br>
           </form>
     </div>
-  
+    
     <div id="chart">
     </div>
     <div id="ZoomChart">
@@ -250,7 +257,7 @@
       function axesLabels(interval)
       {
         
-        d3.select("#chart").append("p").text("Variable: "+vnames[variables.indexOf(curVariable)]).attr("class","paraText");
+        d3.select("#varname").append("p").text("Variable: "+vnames[variables.indexOf(curVariable)]).attr("class","paraText");
       var margin = { top: 50, right: 0, bottom: 70, left: 40 },
           width = 960 - margin.left - margin.right,
           height = 220 - margin.top - margin.bottom,
@@ -290,7 +297,7 @@
           .attr("width", width + margin.left + margin.right)
           .attr("height", height + margin.top + margin.bottom)
           .append("g")
-          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+          .attr("transform", "translate(" + margin.left + "," + "20)");
 
       var dayLabels = svg.selectAll(".dayLabel")
           .data(days)
@@ -467,20 +474,6 @@
           
           legend.exit().remove();
 
-       /* var zoomButton;
-        if(interval==1)
-        {
-          zoomButton=d3.select("#chart")
-            .append("input")
-            .attr("value", "zoom")
-            .attr("type", "button")
-            .attr("class", "button")
-            .on("click", function(d) {
-            document.getElementById("ZoomChart").innerHTML = "";
-               createZoomChart(0,11);
-
-        });
-        }*/
 
         } 
       };
@@ -502,6 +495,7 @@
         .attr("y",function(d,i){ return 50+(30*(i/4));})
         .on("click", function(d) {
           document.getElementById("chart").innerHTML = "";
+          document.getElementById("varname").innerHTML = "";
           document.getElementById("legends").innerHTML = "";
           document.getElementById("ZoomChart").innerHTML = "";
           curVariable=d;
@@ -518,6 +512,7 @@
           document.getElementById("chart").innerHTML = "";
            document.getElementById("legends").innerHTML = "";
          document.getElementById("ZoomChart").innerHTML = "";
+         document.getElementById("varname").innerHTML = "";
           heatmapChart("Stats/"+curVariable+"_"+curDate+".json",latlon,interval);
           /*if(interval==1)
             createZoomChart(13,25);*/
@@ -527,6 +522,7 @@
           document.getElementById("chart").innerHTML = "";
           document.getElementById("legends").innerHTML = "";
           document.getElementById("ZoomChart").innerHTML = "";
+          document.getElementById("varname").innerHTML = "";
           curLegendOption=option;
           heatmapChart("Stats/"+curVariable+"_"+curDate+".json",latlon,4);
         }
@@ -542,6 +538,7 @@
           document.getElementById("chart").innerHTML = "";
            document.getElementById("legends").innerHTML = "";
           document.getElementById("ZoomChart").innerHTML = "";
+          document.getElementById("varname").innerHTML = "";
           heatmapChart("Stats/"+curVariable+"_"+curDate+".json",latlon,4);
           //to load whole new files of that particular date.
         }
@@ -550,7 +547,7 @@
         function createZoomChart(start,end,interval)
         {
           //d3.select("#ZoomChart").append("p").text("More detailed readings ").attr("class","ZoomparaText");
-           d3.select("#ZoomChart").append("p").text("Variable: "+vnames[variables.indexOf(curVariable)]).attr("class","paraText");
+           d3.select("#varname").append("p").text("Variable: "+vnames[variables.indexOf(curVariable)]).attr("class","paraText");
         var margin = { top: 20, right: 0, bottom: 70, left: 40 },
           width = 760 - margin.left - margin.right,
           height = 220 - margin.top - margin.bottom,
@@ -586,7 +583,7 @@
             times = times_1.slice(start);*/
 
         var svgZoom = d3.select("#ZoomChart").append("svg")
-          .attr("width", width + margin.left + margin.right+100)
+          .attr("width", width + margin.left + margin.right+70)
           .attr("height", height + margin.top + margin.bottom)
           .append("g")
           .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -747,6 +744,7 @@
             .on("click", function(d) {
               document.getElementById("ZoomChart").innerHTML = "";
               document.getElementById("legends").innerHTML = "";
+              document.getElementById("varname").innerHTML = "";
               if(start>0)
                createZoomChart(start-11,end-11,interval);
              else
@@ -760,6 +758,7 @@
             .on("click", function(d) {
               document.getElementById("ZoomChart").innerHTML = "";
               document.getElementById("legends").innerHTML = "";
+              document.getElementById("varname").innerHTML = "";
               var e=96/interval;
               if(end<e-12)
                createZoomChart(start+11,end+11,interval);
