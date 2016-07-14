@@ -106,6 +106,17 @@ body {
         color:#FBFCFC;
         background-color: #0097A7;
       }
+.daybuttonPressed{
+        border-radius: 10px;
+        font-family: "Times New Roman";
+        width:70px;
+        padding: 2px;
+        height:50px;
+        font-weight: bolder;
+        box-shadow: inset 0 0 8px #0097A7;
+        background-color:#FAFAFA ;
+        color:#004D40  ;
+}
   .compareButton{
         float:right;
         position: absolute;
@@ -477,7 +488,7 @@ var getGraph=function (g_variable,g_date,day_no){
 }
 
 var graphPlot= function(w_var,g_date,day_no){
-         var text,text1,line_w;
+         var text,text1,line_w,text2;
         if(day_no>0){
            refdate1.setTime(refdate1.getTime()+((day_no-1)*dateOffset1));
            u_date.setTime(refdate1);
@@ -505,7 +516,15 @@ var graphPlot= function(w_var,g_date,day_no){
             {
               text=vnames[variables.indexOf(w_var)];
             }
-        d3.select("#varhead").append("p").text(" "+text+"           Day: "+text1).attr("class","vartitle");
+        if(compare==1)
+        {
+          text2="Comparing Forecasts for ";
+        }
+        else
+        {
+          text2=" ";
+        }
+        d3.select("#varhead").append("p").text(text2+text+"           Day: "+text1).attr("class","vartitle");
 
        svg = d3.select("#plot").append("svg")
                   .attr("width", width + margin.left + margin.right)
@@ -725,7 +744,12 @@ function datasetButtons(){
         .style("background-color", "#455A64")
         .attr("class","button")
         .on("click", function(d) {
-          compare=0;
+          if (compare==1)
+            {
+              compare=0;
+              alert("Comparing mode is Off");
+            }
+         // compare=0;
          document.getElementById("varhead").innerHTML = "";
          document.getElementById("plot").innerHTML = "";
          document.getElementById("legends").innerHTML="";
@@ -745,7 +769,10 @@ function dayChoice()
                   .attr("type","button")
                   .attr("class","daybutton")
                   .attr("value",function(d){ if (d==0) return "All"; return "Day :"+d;})
-                  .on("click",function(d){  dayWiseView(d);});
+                  .on("click",function(d){ 
+                    $(".daybutton.daybuttonPressed").removeClass("daybuttonPressed");
+                    $(this).addClass("daybuttonPressed");
+                    dayWiseView(d);});
     var compareButton=d3.select("#dateOptions").append("input")
                     .attr("type","button")
                     .attr("value","Compare")
@@ -804,8 +831,11 @@ function dateChange(){
 
 function dayWiseView(day_no){
           def_day_no=day_no;
-          if (def_day_no==0)
-            compare=0;
+          if (def_day_no==0&&compare==1)
+            {
+              compare=0;
+              alert("Comparing mode is Off");
+            }
           document.getElementById("varhead").innerHTML = "";
           document.getElementById("plot").innerHTML = "";
           document.getElementById("legends").innerHTML="";
