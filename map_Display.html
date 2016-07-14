@@ -113,6 +113,7 @@
        }
        .sublist{
         text-align:left;
+        float:left;
         font-size: 20px;
         height:60px;
         padding-top: 20px;
@@ -161,7 +162,7 @@
 	  
 
 <script>
-var dest_URL=["linePlots10july.html","calenderView06July2016.html"];
+var dest_URL=["linePlots.html","calendarViewForecast.html"];
 var destFrames=["iframe_a","iframe_a"];
 var destURL=dest_URL[0];
 var curFrame=destFrames[0];
@@ -479,6 +480,7 @@ function urlChange(index){
           curFrame=destFrames[index];
         }
 function dispSubstation(lat,lon){
+      document.getElementById("substations").innerHTML="";
       var height=400;
       var width=400;
       //alert(curPlace);
