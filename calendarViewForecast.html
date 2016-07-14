@@ -74,8 +74,26 @@
         border-radius: 4px;
         font-family: "Times New Roman";
         font-size: 20px;
+        height:40px;
         background-color: #0097A7 ;
         color:#FBFCFC  ;
+        text-align: center;
+      }
+      .button:hover{
+        background-color:#FBFCFC ;
+        color:#0097A7  ;
+        font-weight: bolder;
+      }
+
+      .buttonPressed{
+        border-radius: 6px;
+        box-shadow:inset 0 0 4px #6E2C00 ;
+        font-family: "Times New Roman";
+        font-size: 20px;
+        border-width: 1px;
+        height:40px;
+        background-color:#873600;
+        color:#FAFAFA  ;
         text-align: center;
       }
       #legends{
@@ -494,6 +512,8 @@
         .attr("x",function(d,i){  return 30*(i%4);   })
         .attr("y",function(d,i){ return 50+(30*(i/4));})
         .on("click", function(d) {
+          $(".button.buttonPressed").removeClass("buttonPressed");
+          $(this).addClass("buttonPressed");
           document.getElementById("chart").innerHTML = "";
           document.getElementById("varname").innerHTML = "";
           document.getElementById("legends").innerHTML = "";
