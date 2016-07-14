@@ -35,9 +35,16 @@ body {
   stroke: #000;
   shape-rendering: crispEdges;
 }
-
+.tick line{
+  stroke: black;
+}
 .x.axis path {
   display: none;
+
+}
+.y axis {
+   font-size: 20px; 
+   font-weight: bolder;
 }
 
 .line {
@@ -120,7 +127,7 @@ body {
       }
 .legendText{
         font-size: 20px;
-        color:#566573;
+        /*color:#566573;*/
         font-weight: bold;
         font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ; 
       }
@@ -159,6 +166,13 @@ body {
   font-weight: bold;
   font-family: "Times New Roman";
 }
+ #legends{
+  color:#1C2833  ;
+  border-radius: 10px;
+  background-color: #A2D9CE;
+  box-shadow: inset 0 0 20px #0097A7;
+  text-align: center;
+ }
 
   .y axis{
     float:left;
@@ -246,12 +260,14 @@ var color = d3.scale.category10();
 var opacity_val=0.1;
 var xAxis = d3.svg.axis()
     .scale(x)
-    .ticks(d3.time.hours, 1)
+    .ticks(d3.time.hours,1)
+    .tickSize(10)
     .tickFormat(d3.time.format("%H"))
     .orient("bottom");
 
 var yAxis = d3.svg.axis()
     .scale(y)
+    .tickSize(10)
     .orient("left");
 var yaxispos;
 var minmax_values=[];
@@ -489,13 +505,13 @@ var graphPlot= function(w_var,g_date,day_no){
             {
               text=vnames[variables.indexOf(w_var)];
             }
-        d3.select("#varhead").append("p").text("Variable: "+text+"           Day: "+text1).attr("class","vartitle");
+        d3.select("#varhead").append("p").text(" "+text+"           Day: "+text1).attr("class","vartitle");
 
        svg = d3.select("#plot").append("svg")
                   .attr("width", width + margin.left + margin.right)
                   .attr("height", height + margin.top + margin.bottom)
                   .append("g")
-                  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                  .attr("transform", "translate(" + (margin.left+30) + "," + margin.top + ")");
       svg1 = svg.append("svg")
                   .attr("width", width + margin.left + margin.right)
                   .attr("height", height)
@@ -504,7 +520,8 @@ var graphPlot= function(w_var,g_date,day_no){
               svg.append("g")
                 .attr("class", "x axis")
                 .attr("transform", "translate(5," + height +")")
-                .call(xAxis);
+                .call(xAxis)
+                .style("font-size","15px");
               
               svg.append("line")
               .attr("class", "line_b")
@@ -556,24 +573,23 @@ var graphPlot= function(w_var,g_date,day_no){
               var num=dateString.indexOf(g_date);
               recCounter=0;
               var legsvg=d3.select("#legends").append("svg")
-                  .attr("width",1000)
-                  .attr("height", 100)
-                  .style("fill","steelblue")
+                  .attr("width",700)
+                  .attr("height", 70)
                   .append("g");
               var lines=legsvg.selectAll(".lines").data([0,2,4])
                         .enter().append("line")
                         .attr("class", "line_b")
-                        .attr("x1", function (d){ return (200*d+50);})
-                        .attr("x2", function (d){ return ((200*d)+100);})
-                        .attr("y1", 20)
-                        .attr("y2", 20)
+                        .attr("x1", function (d){ return (100*d+50);})
+                        .attr("x2", function (d){ return ((100*d)+100);})
+                        .attr("y1", 25)
+                        .attr("y2", 25)
                         .attr("stroke","#273746")
                         .style("stroke-opacity", 1)
                         .style("stroke-dasharray",function(d){if(d==0) return (0,0); return (Math.pow(2,d),Math.pow(2,d))});
               var textforlines=legsvg.selectAll(".lines").data(["Most Recent","Less Recent","Least Recent"])
                         .enter().append("text")
                         .attr("class", "line_b")
-                        .attr("x", function (d,i){ return (200*2*i+50);})
+                        .attr("x", function (d,i){ return (100*2*i+50);})
                         .attr("y", 60)
                         .attr("class","legendText")
                         .text(function(d){return d;});
@@ -640,18 +656,18 @@ var graphPlot= function(w_var,g_date,day_no){
              yaxispos= svg.append("g")
                 .attr("class", "y axis")
                 .call(yAxis)
-                .append("text")
-                .attr("transform", "rotate(-90)")
+                .style("font-size","15px")
+                .style("font-weight","bolder")
                 .attr("y", (margin.top+5))
-                .attr("x",5)
+                .attr("x",8)
                 .attr("dy", ".71em");
                 
             svg.append("text")
               .style("font-weight","bolder")
+              .style("font-size","20px")
               .attr("transform", "rotate(-90)")
               .attr("y", "-50")
-              .attr("x","-270")
-              .attr("dy", "1em")
+              .attr("x","-300")
               .style("text-anchor", "middle")
               .text(units[m_index]);
 
@@ -673,13 +689,7 @@ var graphPlot= function(w_var,g_date,day_no){
                      .text("for viewing just the selected variable enter opacity value as 0"); 
 
           }
-          /*var slsvg = svg.append("svg")
-                  .attr("width", width + margin.left + margin.right)
-                  .attr("height",margin.top)
-                  .append("g")
-                  .attr("transform", "translate(" + margin.left + "," + (height+margin.top) ")");
-          var slider=d3.slider().max(0.45).min(0).step(5).on("slide",function(evt, val){update(val);});
-          slsvg.call(slider);*/
+          
 
       }
 
