@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<!-- most recent version -->
+<meta charset="utf-8">
+<style>
+
+body {
+  font: 10px sans-serif;
+}
+
+/*input {
+    background: #fff;
+    border: none;
+    border-radius: 4px;
+    box-shadow: inset 0 0 0 2px #dbdcde;
+    box-sizing: border-box;
+    color: #505e67;
+    display: inline-block;
+    font-size: 16px;
+    height: 40px;
+    margin: 0 0 20px;
+    padding: 4px 10px;
+    max-width: 300px;
+    transition: box-shadow 200ms;
+    vertical-align: top;
+    width: 100%;
+    -webkit-appearance: none;
+    -webkit-transition: 0.2s;
+    -moz-transition: 0.2s;
+    transition: 0.2s;
+    }*/
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+.tick line{
+  stroke: black;
+}
+.x.axis path {
+  display: none;
+
+}
+.y axis {
+   font-size: 20px; 
+   font-weight: bolder;
+}
+
+.line {
+  opacity: 10%;
+  stroke-width: 3.5px;
+}
+.line_b {
+  opacity: 10%;
+  stroke-width: 2.5px;
+}
+#dataset-picker{
+  margin-top: 40px;
+  text-align: center;
+
+}
+.title{
+  color:#1F618D;
+  text-align: center;
+  font-family: "Palantino Linotype";
+  font-size: 25px;
+  font-weight: bolder;
+}
+.vartitle{
+  color:#273746;
+  text-align: center;
+  font-family: "Palantino Linotype";
+  font-size: 22px;
+  font-weight: bolder;
+}
+#opRange{
+  width:50px;
+  color: #505e67;
+  font-size: 16px;
+  height: 30px;
+}
+.subButton{
+  background-color: #0097A7 ;
+  color:#FBFCFC;
+  font-size: 20px;
+  border-radius: 4px;
+  padding: 4px;
+  width:250px;
+}
+.button{
+        border-radius: 8px;
+        font-family: "Times New Roman";
+        width:200px;
+        height:40px;
+        font-weight: bolder;
+        color:#FBFCFC;
+      }
+.daybutton{
+        border-radius: 10px;
+        font-family: "Times New Roman";
+        width:70px;
+        padding: 2px;
+        height:50px;
+        font-weight: bolder;
+        color:#FBFCFC;
+        background-color: #0097A7;
+      }
+.daybuttonPressed{
+        border-radius: 10px;
+        font-family: "Times New Roman";
+        width:70px;
+        padding: 2px;
+        height:50px;
+        font-weight: bolder;
+        box-shadow: inset 0 0 8px #0097A7;
+        background-color:#FAFAFA ;
+        color:#004D40  ;
+}
+  .compareButton{
+        float:right;
+        position: absolute;
+        text-align: center;
+        border-radius: 6px;
+        font-family: "Times New Roman";
+        width:100px;
+        padding: 2px;
+        height:50px;
+        font-weight: bolder;
+        color:#FBFCFC;
+        background-color: #0097A7;
+      }
+.formText{
+        font-size: 20px;
+        color:#273746;
+        font-weight: bold;
+        font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ; 
+      }
+.legendText{
+        font-size: 20px;
+        /*color:#566573;*/
+        font-weight: bold;
+        font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ; 
+      }
+#dateList{
+        background: #0097A7;
+        color:#FBFCFC;
+        text-align: right;
+        display: inline;
+        border-radius: 8px;
+        width:240px;
+        height:30px;
+        padding: 2px;
+        font-size: 18px;
+        font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ; 
+      }
+#dateOptions{
+        text-align: right;
+        display: inline;
+      }
+#daylist{
+        text-align:left;
+        display: inline-block;
+        position: absolute;
+
+      }
+#legendOptions {
+            position: relative;
+            float:right;
+      }
+.buttontext{
+  position: absolute;
+  display: inline;
+  font-size: 20px;
+  margin-left: 20px;
+  color: #0097A7;
+  font-weight: bold;
+  font-family: "Times New Roman";
+}
+ #legends{
+  color:#1C2833  ;
+  border-radius: 10px;
+  background-color: #A2D9CE;
+  box-shadow: inset 0 0 20px #0097A7;
+  text-align: center;
+ }
+
+  .y axis{
+    float:left;
+    position: relative;
+  }
+</style>
+<body>
+  <div><p class="title">Graphs- Three Day Forecast</p></div>
+  <div id="dateOptions">
+          <form class="formText">
+            <select id="dateList" onchange="dateChange()" name="dates">
+            </select>
+          </form>
+  </div>
+  <div id="varhead"></div>
+  <div id="legends"></div>
+  <div id="plot"></div>
+  <div id="legendOptions">
+          <p class="formText">Legend Type:</p>
+          <form class="formText">
+            <input type="radio" name="legendType" value="1" onClick="changeLegend(1)"> National Legend<t>
+            <input type="radio" name="legendType" value="2" onClick="changeLegend(2)"> Region-Wise Legend<t>
+            <br><br>
+          </form>
+    </div>
+  <div id="dataset-picker">
+  <div id="daylist"></div></div>
+  
+  
+<script src="//d3js.org/d3.v3.min.js"></script>
+<script src="d3.slider.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+<script>
+var index=-1;
+var margin = {top: 20, right: 80, bottom: 40, left: 50},
+    width = 2000 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+//var variables=["temperature","mslp","pres","swflux"];
+//var colors = ["#1ABC9C","#225ea8","#F1C40F","#ff5733","#FF00FF"];
+var colors=["#B02F11","#0000DB","#FFFF1A","#00DB6E","#00DBDB"];
+var parseDate = d3.time.format("%Y%m%d").parse;
+var date=new Date();
+date.setHours(0,0,0,0);
+var ref_date=new Date(date);
+var refdate1=new Date(date);
+var u_date=new Date(date);
+var dateOffset = 3*(24*60*60*1000);
+var minOffset=15*60000;
+
+/************************* for date drop down list****************************************/
+var x = document.getElementById("dateList");
+var k=0;
+var option = document.createElement("option");
+var date1=new Date();
+var dateOffset1 = (24*60*60*1000);
+var dateString=[];     
+var curDate;      
+      
+      dateString[0]=date1.getFullYear()+date.getMonth()+date.getDate();
+      option.text=date1.toDateString();
+      x.add(option);
+      for(k=0;k<4;k++)
+      {
+        var option = document.createElement("option");
+        date1.setTime(date1.getTime() - dateOffset1);
+        option.text=date1.toDateString();
+        x.add(option);
+      }
+      /*dateString=["20160621","20160620","20160619","20160618","20160617"];
+      curDate=dateString[0];*/
+/************************************* dates initialized***************************************/
+
+
+date.setTime(date.getTime() + dateOffset);
+/*var x = d3.time.scale()
+    .range([0, width]);*/
+var x=d3.time.scale()
+      .domain([u_date,date])
+      .range([0,width]);
+
+var y= d3.scale.linear()
+      .range([height,5]);
+
+var color = d3.scale.category10();
+var opacity_val=0.1;
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .ticks(d3.time.hours,1)
+    .tickSize(10)
+    .tickFormat(d3.time.format("%H"))
+    .orient("bottom");
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .tickSize(10)
+    .orient("left");
+var yaxispos;
+var minmax_values=[];
+var units=[];
+var reg_max=[],reg_min=[];
+var isUpdate=0;
+var compare=0;
+var recCounter=0;// for distiguishing recent readings and changing stroke style in case of compare.
+var line = d3.svg.line()
+    .x(function(d) { index++; if(index>0) u_date.setTime(u_date.getTime()+minOffset); return x(u_date); })
+    .y(function(d) { if(d.val==9999) return y(0); return y(d.val); })
+    .interpolate("linear");
+
+var gv="all";
+var def_day_no=0;
+var curLegendOption=1;
+var svg;
+var svg1;
+var path;
+var latlon;
+var variables=[];
+var var_names=[];
+var curVariable;
+var vnames=[];
+
+          $.ajax({
+          url: 'Vfile.xml',
+          type: 'GET',
+          dataType: 'xml',
+          timeout: 1000,
+          error: function(){
+              alert('Error loading XML document');
+          },
+          success: function(xml){
+              var xmlElement=xml.getElementsByTagName("variable");
+              for (i=0;i<xmlElement.length;i++)
+              {
+                  variables.push(xmlElement[i].childNodes[0].nodeValue);
+                  //alert(xmlElement[i].childNodes[0].nodeValue);
+              }
+              var xmlElement=xml.getElementsByTagName("name");
+              for (i=0;i<xmlElement.length;i++)
+              {
+                  vnames.push(xmlElement[i].childNodes[0].nodeValue);
+                  //alert(xmlElement[i].childNodes[0].nodeValue);
+              }
+              curVariable="all";
+              dayChoice();
+              datasetButtons();
+              dateString=["20160621","20160620","20160619","20160618","20160617"];
+              curDate=dateString[0];
+              var a = window.location.toString();
+              latlon = a.substring(a.indexOf("=")+1);
+              //alert(vnames);
+              //alert(variables);
+              graphPlot(curVariable,curDate,def_day_no);
+                
+          }
+      });
+
+var getGraph=function (g_variable,g_date,day_no){
+  var unit;
+  
+
+      d3.json("Stats/"+g_variable+"_"+g_date+".json", function(error, d) {
+                    if (error) throw error;
+                    
+                    var days=[];
+                    var hour=[];
+                    var val=[];
+                    var minmax=[];
+                    var variable;
+                    //var unit;
+                    //alert(d.name);
+                    //alert(d.date+d.variable);
+
+
+                    variable=d.variable;
+                    minmax=d.minmax;
+                    //alert(minmax);
+                    if(day_no>0){
+                      var st=96*(day_no-1);
+                      var en=st+96;
+                        for(i=0;i<d.locations.length;i++)
+                        {
+                           var latlonvar=d.locations[i].latitude+""+d.locations[i].longitude;
+                           console.log(latlon);
+                           if(latlon==latlonvar)
+                           {
+
+                               for(j=st;j<en;j++)
+                                 {
+                                        val.push(d.locations[i].values[j]);
+                                      
+                                 }
+
+                                break;
+                           }
+                       }
+
+                        //getMinMax(val,d.name,d.minmax,d.unit);
+                     
+                       //alert(val.length);
+
+                    }
+                    else{
+                      for(i=0;i<d.locations.length;i++)
+                      {
+                         var latlonvar=d.locations[i].latitude+""+d.locations[i].longitude;
+                         console.log(latlon);
+                         if(latlon==latlonvar)
+                         {
+                              val=d.locations[i].values;
+                              break;
+                         }
+                     }
+                   }
+                   if(isUpdate<1)
+                   {
+                          var c=getCol(val,2);
+                          reg_max.push(Math.max.apply(null,c.slice(1)));
+                          reg_min.push(Math.min.apply(null,c));
+                          minmax_values.push(d.minmax);
+                          units.push(d.unit);
+                          //alert(minmax_values);
+                          var_names.push(d.name);
+                          if(reg_max.length==5)
+                            isUpdate=1;
+                  }
+
+                    
+                    
+
+
+                    
+                
+            //color.domain(d3.keys(data[0]).filter(function(key) { return key !== "date"; }));
+
+            
+
+
+              var newArray = val.map(function(d){
+                return { 'day' : d[0], 'hour' : d[1], 'val' : d[2] };
+              });
+              console.log(newArray);
+             
+          /*if(isUpdate==0)
+          {
+            //getMinMax(val,d.name,d.minmax,d.unit);
+              var c=getCol(val,2);
+            
+              reg_max.push(Math.max.apply(null,c.slice(1)));
+              reg_min.push(Math.min.apply(null,c));
+              minmax_values.push(d.minmax);
+              units.push(d.unit);
+              alert(d.name);
+          } */
+
+          if(curLegendOption==1)
+             y.domain([minmax[0],minmax[1]]);
+         
+          else
+          {
+            var c=var_names.indexOf(d.name);
+            y.domain([reg_min[c],reg_max[c]]);
+          }
+
+           
+
+
+            path=svg1.append("path")
+                .datum(d.name)
+                .attr("d",function(d){ return line(newArray);})
+                .attr("class","line")
+                .style("stroke", function(d) { console.log(d); return colors[variables.indexOf(d)]; })
+                .style("fill", function(d) {  if(day_no>0) return "none"; return colors[variables.indexOf(d)]; })
+                .style("fill-opacity",function(d){
+                                                  if(gv=="all") return 0.5; 
+                                                  else{
+                                                    if(d==gv)
+                                                      return 1;
+                                                    else
+                                                      return opacity_val;
+                                                  }
+                                                })
+                .style("stroke-opacity",function(d){
+                                                  if(gv=="all") return 0.5; 
+                                                  else{
+                                                    if(d==gv)
+                                                      return 1;
+                                                    else
+                                                      return opacity_val;
+                                                  }
+                                                });      
+            if(compare==1) // to change stroke style.
+            {
+              path.style("stroke-dasharray",(Math.pow(2,recCounter)-1,Math.pow(2,recCounter)-1)); 
+              recCounter=recCounter+2;
+            }
+            
+
+           //     alert(index);
+           //    alert(u_date);
+                index=-1;
+                u_date.setTime(refdate1);
+                });
+}
+
+var graphPlot= function(w_var,g_date,day_no){
+         var text,text1,line_w,text2;
+        if(day_no>0){
+           refdate1.setTime(refdate1.getTime()+((day_no-1)*dateOffset1));
+           u_date.setTime(refdate1);
+           //alert(u_date+"  ,"+(u_date.getTime()+dateOffset1));
+           x.domain([u_date,(u_date.getTime()+dateOffset1-minOffset)]);
+           x.range([0,width/2]);
+           line_w=width/2;
+           text1=" "+day_no;
+        }
+        else
+        {
+          u_date.setTime(ref_date);
+          refdate1.setTime(ref_date);
+          x.domain([u_date,date.getTime()-minOffset]);
+          x.range([0,width]);
+          line_w=width;
+          text1="All Days"
+        }
+
+ 
+       
+        if (w_var=="all")
+            text="All Variables";
+        else
+            {
+              text=vnames[variables.indexOf(w_var)];
+            }
+        if(compare==1)
+        {
+          text2="Comparing Forecasts for ";
+        }
+        else
+        {
+          text2=" ";
+        }
+        d3.select("#varhead").append("p").text(text2+text+"           Day: "+text1).attr("class","vartitle");
+
+       svg = d3.select("#plot").append("svg")
+                  .attr("width", width + margin.left + margin.right)
+                  .attr("height", height + margin.top + margin.bottom)
+                  .append("g")
+                  .attr("transform", "translate(" + (margin.left+30) + "," + margin.top + ")");
+      svg1 = svg.append("svg")
+                  .attr("width", width + margin.left + margin.right)
+                  .attr("height", height)
+                  .append("g");
+              
+              svg.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(5," + height +")")
+                .call(xAxis)
+                .style("font-size","15px");
+              
+              svg.append("line")
+              .attr("class", "line_b")
+              .attr("x1", 0)
+              .attr("x2", line_w)
+              .attr("y1", height)
+              .attr("y2", height)
+              .attr("stroke","#273746")
+              .style("stroke-opacity", 1);
+ 
+
+                     
+        /* var opacity_range= d3.select("#plot")
+                      .append("input")
+                      .attr("value",0.2)
+                      .attr("type","range")
+                      .attr("id","opRange")
+                      .attr("max",0.45)
+                      .attr("min",0.0)
+                      .on("change",function(){ alert(this.value); update(+this.value);});*/
+
+
+
+          if(w_var=="all")
+          {
+              gv="all";
+              svg.append("line")
+              .attr("class", "line_b")
+              .attr("x1", 3)
+              .attr("x2", 3)
+              .attr("y1", 0)
+              .attr("y2", height)
+              .attr("stroke","#273746")
+              .style("stroke-opacity", 1);
+
+              for(j=0;j<variables.length;j++)
+              {
+                   getGraph(variables[j],g_date,day_no);               
+
+              }
+              
+          }
+          else
+          {
+            gv=w_var;
+            var m_index=var_names.indexOf(w_var);
+            if(compare==1&&def_day_no>0)
+            {
+              var num=dateString.indexOf(g_date);
+              recCounter=0;
+              var legsvg=d3.select("#legends").append("svg")
+                  .attr("width",700)
+                  .attr("height", 70)
+                  .append("g");
+              var lines=legsvg.selectAll(".lines").data([0,2,4])
+                        .enter().append("line")
+                        .attr("class", "line_b")
+                        .attr("x1", function (d){ return (100*d+50);})
+                        .attr("x2", function (d){ return ((100*d)+100);})
+                        .attr("y1", 25)
+                        .attr("y2", 25)
+                        .attr("stroke","#273746")
+                        .style("stroke-opacity", 1)
+                        .style("stroke-dasharray",function(d){if(d==0) return (0,0); return (Math.pow(2,d),Math.pow(2,d))});
+              var textforlines=legsvg.selectAll(".lines").data(["Most Recent","Less Recent","Least Recent"])
+                        .enter().append("text")
+                        .attr("class", "line_b")
+                        .attr("x", function (d,i){ return (100*2*i+50);})
+                        .attr("y", 60)
+                        .attr("class","legendText")
+                        .text(function(d){return d;});
+ 
+              if(def_day_no==1)
+              {
+                if(num+2<5)
+                {
+                  getGraph(w_var,g_date,def_day_no);
+                  getGraph(w_var,dateString[num+1],def_day_no+1);
+                  getGraph(w_var,dateString[num+2],def_day_no+2);
+                }
+                else if(num+1<5)
+                {
+                  getGraph(w_var,g_date,def_day_no);
+                  getGraph(w_var,dateString[num+1],def_day_no+1);
+                }
+                else
+                  getGraph(w_var,g_date,def_day_no);
+              }
+              else if(def_day_no==2)
+              {
+                if(num-1>=0)
+                {
+                  getGraph(w_var,dateString[num-1],def_day_no-1);
+                }
+                if(num+1<5)
+                {
+                  getGraph(w_var,g_date,def_day_no);
+                  getGraph(w_var,dateString[num+1],def_day_no+1);
+                }
+                
+              }
+              else if(def_day_no==3)
+              {
+                if(num-2>=0)
+                {
+                  getGraph(w_var,dateString[num-2],def_day_no-2);
+                  getGraph(w_var,dateString[num-1],def_day_no-1);
+                  getGraph(w_var,g_date,def_day_no); 
+                }
+                else if(num-1>=0)
+                {
+                  getGraph(w_var,dateString[num-1],def_day_no-1);
+                  getGraph(w_var,g_date,def_day_no);              
+                }
+                else
+                  getGraph(w_var,g_date,def_day_no);
+              }
+            }
+            else{
+              for(j=0;j<variables.length;j++)
+              {
+                   getGraph(variables[j],g_date,day_no);               
+
+              }
+            }
+            
+            if(curLegendOption==1)
+              y.domain([minmax_values[m_index][0],minmax_values[m_index][1]]);
+            else          
+              y.domain([reg_min[m_index],reg_max[m_index]]);
+
+             yaxispos= svg.append("g")
+                .attr("class", "y axis")
+                .call(yAxis)
+                .style("font-size","15px")
+                .style("font-weight","bolder")
+                .attr("y", (margin.top+5))
+                .attr("x",8)
+                .attr("dy", ".71em");
+                
+            svg.append("text")
+              .style("font-weight","bolder")
+              .style("font-size","20px")
+              .attr("transform", "rotate(-90)")
+              .attr("y", "-50")
+              .attr("x","-300")
+              .style("text-anchor", "middle")
+              .text(units[m_index]);
+
+            var opacity_con= d3.select("#plot")
+                      .append("input")
+                      .attr("type","text")
+                      .attr("id","opRange")
+                      .attr("value",opacity_val);
+
+            var submit=d3.select("#plot")
+                      .append("input")
+                      .attr("class","subButton")
+                      .attr("type","button")
+                      .attr("value","change opacity (0-0.45)")
+                      .on("click",function(){update();});
+                     d3.select("#plot")
+                     .append("p")
+                     .attr("class","buttontext")
+                     .text("for viewing just the selected variable enter opacity value as 0"); 
+
+          }
+          
+
+      }
+
+
+function datasetButtons(){
+
+      var datasetpicker = d3.select("#dataset-picker").selectAll(".dataset-button")
+        .data(variables);
+
+      datasetpicker.enter()
+        .append("input")
+        .attr("value", function(d){ var n = variables.indexOf(d);
+                                    var name=vnames[n];
+                                    //alert(n);
+                                      return name; })
+        .attr("type", "button")
+        .attr("class","button")
+        .style("background-color", function(d) {  console.log(d); return colors[variables.indexOf(d)]; })
+        .attr("x",function(d,i){  return 30*(i%4);   })
+        .attr("y",function(d,i){ return 50+(30*(i/4));})
+        .on("click", function(d) {
+         document.getElementById("plot").innerHTML = "";
+         document.getElementById("varhead").innerHTML = "";
+         document.getElementById("legends").innerHTML="";
+         curVariable=d;
+         graphPlot(d,curDate,def_day_no);
+
+        });
+      
+      d3.select("#dataset-picker").append("input")
+        .attr("value","ALL")
+        .attr("type", "button")
+        .style("background-color", "#455A64")
+        .attr("class","button")
+        .on("click", function(d) {
+          if (compare==1)
+            {
+              compare=0;
+              alert("Comparing mode is Off");
+            }
+         // compare=0;
+         document.getElementById("varhead").innerHTML = "";
+         document.getElementById("plot").innerHTML = "";
+         document.getElementById("legends").innerHTML="";
+         curVariable="all";
+         graphPlot("all",curDate,def_day_no);
+
+        });
+
+
+      }
+function dayChoice()
+{ 
+    var days=[0,1,2,3];
+    var dayButtons=d3.select("#dateOptions").selectAll(".dayButtons")
+                  .data(days).enter()
+                  .append("input")
+                  .attr("type","button")
+                  .attr("class","daybutton")
+                  .attr("value",function(d){ if (d==0) return "All"; return "Day :"+d;})
+                  .on("click",function(d){ 
+                    $(".daybutton.daybuttonPressed").removeClass("daybuttonPressed");
+                    $(this).addClass("daybuttonPressed");
+                    dayWiseView(d);});
+    var compareButton=d3.select("#dateOptions").append("input")
+                    .attr("type","button")
+                    .attr("value","Compare")
+                    .attr("class","compareButton")
+                    .on("click",function(){ if(gv=="all"||def_day_no==0) alert("compare option valid only in case of separate variables and on specific day. "); 
+                      else 
+                       {compare=1;
+                        document.getElementById("varhead").innerHTML = "";
+                        document.getElementById("plot").innerHTML = "";
+                        document.getElementById("legends").innerHTML="";
+                        graphPlot(curVariable,curDate,def_day_no); }});
+}
+function update() {
+  var op=document.getElementById("opRange").value;
+  //ert(op);
+  if(op>0.45||op<0)
+  {
+    alert("opacity value should be within 0 to 0.45");
+  }
+  else
+  {
+  opacity_val=op;
+  path.style("fill-opacity",function(d){   if(gv=="all") return 0.5; 
+                                                  else{
+                                                    if(d==gv)
+                                                      return 1;
+                                                    else
+                                                      return opacity_val;
+                                                  }
+                                                })
+                .style("stroke-opacity",function(d){
+                                                  if(gv=="all") return 0.5; 
+                                                  else{
+                                                    if(d==gv)
+                                                      return 1;
+                                                    else
+                                                      return opacity_val;
+                                                  }
+                                                }); 
+
+  
+  }
+}
+function dateChange(){
+
+          //var date=document.getElementById("dateList").value;
+          var list=document.getElementById("dateList");
+          var index=list.selectedIndex;
+          curDate=dateString[index];
+          document.getElementById("varhead").innerHTML = "";
+          document.getElementById("plot").innerHTML = "";
+          document.getElementById("legends").innerHTML="";
+          graphPlot(curVariable,curDate,0);
+          //to load whole new files of that particular date.
+        }
+
+function dayWiseView(day_no){
+          def_day_no=day_no;
+          if (def_day_no==0&&compare==1)
+            {
+              compare=0;
+              alert("Comparing mode is Off");
+            }
+          document.getElementById("varhead").innerHTML = "";
+          document.getElementById("plot").innerHTML = "";
+          document.getElementById("legends").innerHTML="";
+          graphPlot(curVariable,curDate,def_day_no);
+}
+ function changeLegend(option){
+          document.getElementById("varhead").innerHTML = "";
+          document.getElementById("plot").innerHTML = "";
+          document.getElementById("legends").innerHTML="";
+          curLegendOption=option;
+          graphPlot(curVariable,curDate,def_day_no);
+        }
+  
+function getCol(matrix, col){
+       var column = [];
+       for(var i=0; i<matrix.length; i++){
+          column.push(matrix[i][col]);
+       }
+       return column;
+    }
+function getMinMax(val_arr,var_name,minmax,unit)
+{
+             alert(var_name);
+             var c=getCol(val_arr,2);
+            
+              reg_max.push(Math.max.apply(null,c.slice(1)));
+              reg_min.push(Math.min.apply(null,c));
+              minmax_values.push(minmax);
+              units.push(unit);
+}
+window.onscroll = function() {yaxisFunction()};
+
+function yaxisFunction() {
+    if(gv!="all")
+    {
+
+      yaxispos.attr("transform","translate("+document.body.scrollLeft+","+(margin.top+5)+")");
+      yaxispos.call(yAxis);
+        /*if (document.body.scrollRight > 0 || document.documentElement.scrollLeft > 0) {
+            document.getElementById("myP").className = "test";
+        } else {
+            document.getElementById("myP").className = "";
+        }*/
+  }
+}
+
+</script>
