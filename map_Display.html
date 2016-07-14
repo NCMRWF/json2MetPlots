@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- most recent version -->
 <meta charset="utf-8">
 <head>
   
@@ -102,6 +103,33 @@
         padding-top: 20px;
         font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ;
        }
+       #substations{
+         font-weight: bold;
+          color:#154360;
+          position: relative;
+          width:450px;
+          height:430px;
+          margin-top:10px;
+       }
+       .sublist{
+        text-align:left;
+        font-size: 20px;
+        height:60px;
+        padding-top: 20px;
+        font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ;
+       }
+       .divTitle{
+        color:#154360;
+        text-align:center;
+        font-size: 20px;
+        height:60px;
+        padding-top: 20px;
+        font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ;
+       }
+       #options{
+        width:650px;
+        position: absolute;
+       }
   			
   </style>
 </head>
@@ -112,7 +140,7 @@
 	
        
           <div id="subtitle">Glimpse of Weather Conditions in the prominent states of India</div><br><br>
-          <br><br>
+        
           <div id="options">
             <p class="formText">View:
             <form class="formText">
@@ -121,21 +149,23 @@
               <br> 
             </form></p>
             </div>
+          <div id="plots"><iframe src="" name="iframe_a" width="1200px" height="1150px" frameBorder="0" ></iframe></div>
 					<div id = "map1"> 
 					</div>
 
-					<div id="plots"><iframe src="" name="iframe_a" width="1200px" height="1150px" frameBorder="0" ></iframe></div>
+					
           <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-          <div id="lineplots"><iframe src="" name="iframe_b" width="100%" height="1150px" frameBorder="0" ></iframe></div>
-          
+         <!--  <div id="lineplots"><iframe src="" name="iframe_b" width="100%" height="1150px" frameBorder="0" ></iframe></div> -->
+           <div id="substations"></div>
 				     		   
 	  
 
 <script>
-var dest_URL=["linePlots.html","calendarViewForecast.html"];
+var dest_URL=["linePlots10july.html","calenderView06July2016.html"];
 var destFrames=["iframe_a","iframe_a"];
 var destURL=dest_URL[0];
 var curFrame=destFrames[0];
+var curPlace;
 var places = [
               {
                 name: "Delhi",
@@ -404,13 +434,16 @@ d3.json("test.json", function(error, swiss) {
 					
 					var tip = d3.tip()
 							.attr('class', 'd3-tip')
-							.offset([-5, 0])
+							.offset([-8, 0])
 							.style("left", "300px")
 							.style("top", "150px")
 							.html(function(d) {
                 //alert("tip !");
-								return ("<a href="+destURL+"?latlon="+d.location.latitude+d.location.longitude+" target="+curFrame+">"+d.name +"</a>");
-                
+                //dispSubstation(d.name,d.location.latitude,d.location.longitude);
+								/*return ("<a href="+destURL+"?latlon="+d.location.latitude+d.location.longitude+" target="+curFrame+">"+d.name +"</a>");*/
+                document.getElementById("substations").innerHTML="";
+                curPlace=d.name;
+                return ("<a href='javascript:;' onclick='dispSubstation("+d.location.latitude+","+d.location.longitude+")'>"+d.name +"</a>");
 							})
 							
 						svg.call(tip);
@@ -419,7 +452,7 @@ d3.json("test.json", function(error, swiss) {
 svg.selectAll(".pin")
 						  .data(places)
 						  .enter().append("circle", ".pin")
-						  .attr("r", 3)
+						  .attr("r", 4)
 						  .attr("transform", function(d) {
 							return "translate(" + projection([
 							  d.location.longitude,
@@ -445,5 +478,43 @@ function urlChange(index){
           destURL=dest_URL[index];
           curFrame=destFrames[index];
         }
+function dispSubstation(lat,lon){
+      var height=400;
+      var width=400;
+      //alert(curPlace);
+      var list;
+      d3.select("#substations").append("text").text("Prominent Substations of "+curPlace).attr("class","divTitle");
+      var subsvg=d3.select("#substations").append("svg")
+                  .attr("width",width+50)
+                  .attr("height",height)
+                  .attr("transform","translate(50,200)");
+
+      d3.json("substations.json",function(error,d){
+          if (error) throw error;
+          for(i=0;i<d.locations.length;i++)
+          {
+            if(d.locations[i].city==curPlace)
+            {
+              list=d.locations[i].substations;
+              //alert(list);
+              break;
+            }
+          }
+          var subList=subsvg.selectAll(".substations")
+                      .data(list);
+
+              subList.enter()
+              .append("text")
+              .text(function(d){ return d[0];})
+              .attr("class","sublist")
+              .attr("transform","translate(100,20)")
+              .attr("x",function(d,i){ return (width/1.5)*(Math.floor(i/5));})
+              .attr("y",function(d,i){ return ((i%5)*30);})
+              .on("click",function(d,i){alert(d);});
+          
+          subList.exit().remove();
+      });
+      window.open(destURL+"?latlon="+lat+lon,curFrame);
+}
 </script>
 
