@@ -9,7 +9,7 @@
   <script src="http://d3js.org/topojson.v1.min.js"></script>
 
   <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
-
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
 
  <!-- <script src="d3.js"></script> -->
   <style>
@@ -105,7 +105,6 @@
        }
        #substations{
          font-weight: bold;
-          color:#154360;
           position: relative;
           width:450px;
           height:230px;
@@ -113,6 +112,8 @@
        }
        .sublist{
         text-align:left;
+        color:#154360;
+        cursor:pointer;
         float:left;
         font-size: 20px;
         height:60px;
@@ -132,6 +133,24 @@
         width:650px;
         position: absolute;
        }
+       a:link {
+            text-decoration: none;
+            background-color: none;
+        }
+        
+         a:hover {
+            text-decoration: none;
+            background-color:#FFFF33;
+            
+        }
+        .sublist:hover {
+            text-decoration: underline;
+            color:#FFFF33;
+        }
+
+        .sublistclicked {
+           color:#00CC00 ;
+        }
   			
   </style>
 </head>
@@ -518,7 +537,9 @@ function dispSubstation(lat,lon){
               .attr("transform","translate(100,20)")
               .attr("x",function(d,i){ return (width/1.5)*(Math.floor(i/5));})
               .attr("y",function(d,i){ return ((i%5)*30);})
-              .on("click",function(d,i){alert(d);});
+              .on("click",function(d,i){ $(".sublist.sublistclicked").removeClass(".sublistclicked");
+                                         $(this).addClass(".sublistclicked");
+                                          alert(d);});
           
           subList.exit().remove();
       });
