@@ -74,11 +74,16 @@ body {
   font-size: 22px;
   font-weight: bolder;
 }
+#varhead{
+  height:25px;
+}
 #opRange{
   width:50px;
   color: #505e67;
   font-size: 16px;
   height: 30px;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 2px #dbdcde;
 }
 .subButton{
   background-color: #0097A7 ;
@@ -87,6 +92,8 @@ body {
   border-radius: 4px;
   padding: 4px;
   width:250px;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 2px #dbdcde;
 }
 .button{
         border-radius: 8px;
@@ -129,6 +136,20 @@ body {
         font-weight: bolder;
         color:#FBFCFC;
         background-color: #0097A7;
+      }
+    .compareButtonPressed{
+        float:right;
+        position: absolute;
+        text-align: center;
+        border-radius: 6px;
+        font-family: "Times New Roman";
+        width:100px;
+        padding: 2px;
+        height:50px;
+        font-weight: bolder;
+        box-shadow: inset 0 0 8px #0097A7;
+        background-color:#FAFAFA ;
+        color:#004D40  ;
       }
 .formText{
         font-size: 20px;
@@ -180,8 +201,8 @@ body {
  #legends{
   color:#1C2833  ;
   border-radius: 10px;
-  background-color: #A2D9CE;
-  box-shadow: inset 0 0 20px #0097A7;
+  /*background-color: #A2D9CE;*/
+  box-shadow: inset 0 0 5px #0097A7;
   text-align: center;
  }
 
@@ -220,7 +241,7 @@ body {
 var index=-1;
 var margin = {top: 20, right: 80, bottom: 40, left: 50},
     width = 2000 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
+    height = 400 - margin.top - margin.bottom;
 //var variables=["temperature","mslp","pres","swflux"];
 //var colors = ["#1ABC9C","#225ea8","#F1C40F","#ff5733","#FF00FF"];
 var colors=["#B02F11","#0000DB","#FFFF1A","#00DB6E","#00DBDB"];
@@ -239,17 +260,20 @@ var k=0;
 var option = document.createElement("option");
 var date1=new Date();
 var dateOffset1 = (24*60*60*1000);
-var dateString=[];     
+var dateString=[];
+var dispdates=[];     
 var curDate;      
       
       dateString[0]=date1.getFullYear()+date.getMonth()+date.getDate();
       option.text=date1.toDateString();
+      dispdates.push(date1.toLocaleDateString());
       x.add(option);
       for(k=0;k<4;k++)
       {
         var option = document.createElement("option");
         date1.setTime(date1.getTime() - dateOffset1);
         option.text=date1.toDateString();
+        dispdates.push(date1.toLocaleDateString());
         x.add(option);
       }
       /*dateString=["20160621","20160620","20160619","20160618","20160617"];
@@ -475,7 +499,7 @@ var getGraph=function (g_variable,g_date,day_no){
                                                 });      
             if(compare==1) // to change stroke style.
             {
-              path.style("stroke-dasharray",(Math.pow(2,recCounter)-1,Math.pow(2,recCounter)-1)); 
+              path.style("stroke-dasharray",function(){if(recCounter==0) return (0,0); else return (Math.pow(2,(6-recCounter))-1,Math.pow(2,(6-recCounter))-1);}); 
               recCounter=recCounter+2;
             }
             
@@ -586,59 +610,53 @@ var graphPlot= function(w_var,g_date,day_no){
           else
           {
             gv=w_var;
+            var dates=[];
             var m_index=var_names.indexOf(w_var);
             if(compare==1&&def_day_no>0)
             {
               var num=dateString.indexOf(g_date);
               recCounter=0;
               var legsvg=d3.select("#legends").append("svg")
-                  .attr("width",700)
-                  .attr("height", 70)
+                  .attr("width",900)
+                  .attr("height", 40)
                   .append("g");
-              var lines=legsvg.selectAll(".lines").data([0,2,4])
-                        .enter().append("line")
-                        .attr("class", "line_b")
-                        .attr("x1", function (d){ return (100*d+50);})
-                        .attr("x2", function (d){ return ((100*d)+100);})
-                        .attr("y1", 25)
-                        .attr("y2", 25)
-                        .attr("stroke","#273746")
-                        .style("stroke-opacity", 1)
-                        .style("stroke-dasharray",function(d){if(d==0) return (0,0); return (Math.pow(2,d),Math.pow(2,d))});
-              var textforlines=legsvg.selectAll(".lines").data(["Most Recent","Less Recent","Least Recent"])
-                        .enter().append("text")
-                        .attr("class", "line_b")
-                        .attr("x", function (d,i){ return (100*2*i+50);})
-                        .attr("y", 60)
-                        .attr("class","legendText")
-                        .text(function(d){return d;});
  
               if(def_day_no==1)
               {
                 if(num+2<5)
-                {
+                { 
                   getGraph(w_var,g_date,def_day_no);
+                  dates.push(dispdates[num]);
                   getGraph(w_var,dateString[num+1],def_day_no+1);
+                  dates.push(dispdates[num+1]);
                   getGraph(w_var,dateString[num+2],def_day_no+2);
+                  dates.push(dispdates[num+2]);
                 }
                 else if(num+1<5)
                 {
                   getGraph(w_var,g_date,def_day_no);
+                  dates.push(dispdates[num]);
                   getGraph(w_var,dateString[num+1],def_day_no+1);
+                  dates.push(dispdates[num+1]);
                 }
-                else
+                else{
                   getGraph(w_var,g_date,def_day_no);
+                  dates.push(dispdates[num]);
+                }
               }
               else if(def_day_no==2)
               {
                 if(num-1>=0)
                 {
                   getGraph(w_var,dateString[num-1],def_day_no-1);
+                  dates.push(dispdates[num-1]);
                 }
                 if(num+1<5)
                 {
                   getGraph(w_var,g_date,def_day_no);
+                  dates.push(dispdates[num]);
                   getGraph(w_var,dateString[num+1],def_day_no+1);
+                  dates.push(dispdates[num+1]);
                 }
                 
               }
@@ -647,17 +665,41 @@ var graphPlot= function(w_var,g_date,day_no){
                 if(num-2>=0)
                 {
                   getGraph(w_var,dateString[num-2],def_day_no-2);
+                  dates.push(dispdates[num-2]);
                   getGraph(w_var,dateString[num-1],def_day_no-1);
+                  dates.push(dispdates[num-1]);
                   getGraph(w_var,g_date,def_day_no); 
+                  dates.push(dispdates[num]);
                 }
                 else if(num-1>=0)
                 {
                   getGraph(w_var,dateString[num-1],def_day_no-1);
-                  getGraph(w_var,g_date,def_day_no);              
+                  dates.push(dispdates[num-1]);
+                  getGraph(w_var,g_date,def_day_no); 
+                  dates.push(dispdates[num]);             
                 }
-                else
+                else{
                   getGraph(w_var,g_date,def_day_no);
+                  dates.push(dispdates[num]);
+                }
               }
+              var lines=legsvg.selectAll(".lines").data(dates)
+                        .enter().append("line")
+                        .attr("class", "line_b")
+                        .attr("x1", function (d,i){ return ((200*i)+150+(i*50));})
+                        .attr("x2", function (d,i){ return ((200*i)+250+(i*50));})
+                        .attr("y1", 25)
+                        .attr("y2", 25)
+                        .attr("stroke","#273746")
+                        .style("stroke-opacity", 1)
+                        .style("stroke-dasharray",function(d,i){if(d==0) return (0,0); return (Math.pow(2,(6-(2*i))),Math.pow(2,(6-(2*i))));});
+              var textforlines=legsvg.selectAll(".lines").data(dates)
+                        .enter().append("text")
+                        .attr("class", "line_b")
+                        .attr("x", function (d,i){ return (200*i+20+(i*50));})
+                        .attr("y", 25)
+                        .attr("class","legendText")
+                        .text(function(d){ return d+" ";});
             }
             else{
               for(j=0;j<variables.length;j++)
@@ -747,6 +789,7 @@ function datasetButtons(){
           if (compare==1)
             {
               compare=0;
+              $(".compareButton.compareButtonPressed").removeClass("compareButtonPressed");
               alert("Comparing mode is Off");
             }
          // compare=0;
@@ -779,7 +822,9 @@ function dayChoice()
                     .attr("class","compareButton")
                     .on("click",function(){ if(gv=="all"||def_day_no==0) alert("compare option valid only in case of separate variables and on specific day. "); 
                       else 
-                       {compare=1;
+                       {
+                        $(this).addClass("compareButtonPressed");
+                        compare=1;
                         document.getElementById("varhead").innerHTML = "";
                         document.getElementById("plot").innerHTML = "";
                         document.getElementById("legends").innerHTML="";
@@ -795,25 +840,10 @@ function update() {
   else
   {
   opacity_val=op;
-  path.style("fill-opacity",function(d){   if(gv=="all") return 0.5; 
-                                                  else{
-                                                    if(d==gv)
-                                                      return 1;
-                                                    else
-                                                      return opacity_val;
-                                                  }
-                                                })
-                .style("stroke-opacity",function(d){
-                                                  if(gv=="all") return 0.5; 
-                                                  else{
-                                                    if(d==gv)
-                                                      return 1;
-                                                    else
-                                                      return opacity_val;
-                                                  }
-                                                }); 
-
-  
+  document.getElementById("varhead").innerHTML = "";
+  document.getElementById("plot").innerHTML = "";
+  document.getElementById("legends").innerHTML="";
+  graphPlot(curVariable,curDate,def_day_no);  
   }
 }
 function dateChange(){
@@ -834,6 +864,7 @@ function dayWiseView(day_no){
           if (def_day_no==0&&compare==1)
             {
               compare=0;
+              $(".compareButton.compareButtonPressed").removeClass("compareButtonPressed");
               alert("Comparing mode is Off");
             }
           document.getElementById("varhead").innerHTML = "";
@@ -872,8 +903,14 @@ function yaxisFunction() {
     if(gv!="all")
     {
 
-      yaxispos.attr("transform","translate("+document.body.scrollLeft+","+(margin.top+5)+")");
-      yaxispos.call(yAxis);
+        var m_index=var_names.indexOf(gv);
+        if(curLegendOption==1)
+              y.domain([minmax_values[m_index][0],minmax_values[m_index][1]]);
+        else          
+              y.domain([reg_min[m_index],reg_max[m_index]]);
+
+       yaxispos.attr("transform","translate("+document.body.scrollLeft+",0)");
+       yaxispos.call(yAxis);
         /*if (document.body.scrollRight > 0 || document.documentElement.scrollLeft > 0) {
             document.getElementById("myP").className = "test";
         } else {

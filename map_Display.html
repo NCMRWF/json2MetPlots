@@ -108,7 +108,7 @@
           color:#154360;
           position: relative;
           width:450px;
-          height:430px;
+          height:230px;
           margin-top:10px;
        }
        .sublist{
@@ -125,6 +125,7 @@
         font-size: 20px;
         height:60px;
         padding-top: 20px;
+        padding-bottom: 20px;
         font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ;
        }
        #options{
@@ -162,11 +163,12 @@
 	  
 
 <script>
-var dest_URL=["linePlots.html","calendarViewForecast.html"];
+var dest_URL=["linePlots14july.html","calenderView12July2016.html"];
 var destFrames=["iframe_a","iframe_a"];
 var destURL=dest_URL[0];
 var curFrame=destFrames[0];
-var curPlace;
+var curPlace="";
+var curLat, curLon;
 var places = [
               {
                 name: "Delhi",
@@ -444,6 +446,8 @@ d3.json("test.json", function(error, swiss) {
 								/*return ("<a href="+destURL+"?latlon="+d.location.latitude+d.location.longitude+" target="+curFrame+">"+d.name +"</a>");*/
                 document.getElementById("substations").innerHTML="";
                 curPlace=d.name;
+                curLat=d.location.latitude;
+                curLon=d.location.longitude;
                 return ("<a href='javascript:;' onclick='dispSubstation("+d.location.latitude+","+d.location.longitude+")'>"+d.name +"</a>");
 							})
 							
@@ -478,10 +482,12 @@ function urlChange(index){
           var index=list.selectedIndex;*/
           destURL=dest_URL[index];
           curFrame=destFrames[index];
+          if(curPlace!="")
+           window.open(destURL+"?latlon="+curLat+curLon,curFrame);
         }
 function dispSubstation(lat,lon){
       document.getElementById("substations").innerHTML="";
-      var height=400;
+      var height=200;
       var width=400;
       //alert(curPlace);
       var list;
