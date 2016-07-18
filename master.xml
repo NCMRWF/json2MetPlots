@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<page>
+	<model name="Regional">
+		<path>Stats/National/</path>
+		<frequency>15 min</frequency>
+		<intervals>
+			<interval>
+				<iname>15 min</iname>
+				<steps>1</steps>
+			</interval>
+			<interval>
+				<iname>30 min</iname>
+				<steps>2</steps>
+			</interval>
+			<interval>
+				<iname>1 hour</iname>
+				<steps>4</steps>
+			</interval>
+			<interval>
+				<iname>2 hours</iname>
+				<steps>8</steps>
+			</interval>
+			<interval>
+				<iname>3 hours</iname>
+				<steps>12</steps>
+			</interval>
+		</intervals>
+		<variables>
+			<variable>
+				<vname>Temperature</vname>
+				<fname>temperature</fname>
+				<desc></desc>
+			</variable>
+			<variable>
+				<vname>Pressure</vname>
+				<fname>pres</fname>
+				<desc></desc>
+			</variable>
+			<variable>
+				<vname>Humidity</vname>
+				<fname>shumid</fname>
+				<desc></desc>
+			</variable>
+			<variable>
+				<vname>Short Wave Flux</vname>
+				<fname>swflux</fname>
+				<desc></desc>
+			</variable>
+			<variable>
+				<vname>Mean Sea Level Pressure</vname>
+				<fname>mslp</fname>
+				<desc></desc>
+			</variable>
+		</variables>
+	</model>
+	<model name="Global">
+		<path>Stats/Global/</path>
+		<frequency>1 hour</frequency>
+		<intervals>
+			<interval>1 hour</interval>
+			<interval>2 hours</interval>
+			<interval>3 hours</interval>
+		</intervals>
+		<variables>
+			<variable>
+				<vname>Temperature</vname>
+				<fname>temperature</fname>
+				<desc></desc>
+			</variable>
+			<variable>
+				<vname>Pressure</vname>
+				<fname>pres</fname>
+				<desc></desc>
+			</variable>
+			<variable>
+				<vname>Humidity</vname>
+				<fname>shumid</fname>
+				<desc></desc>
+			</variable>
+			<variable>
+				<vname>Short Wave Flux</vname>
+				<fname>swflux</fname>
+				<desc></desc>
+			</variable>
+			<variable>
+				<vname>Mean Sea Level Pressure</vname>
+				<fname>mslp</fname>
+				<desc></desc>
+			</variable>
+		</variables>
+	</model>
+
+</page>
