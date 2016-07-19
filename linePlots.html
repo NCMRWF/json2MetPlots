@@ -305,6 +305,7 @@ var yAxis = d3.svg.axis()
     .tickSize(10)
     .orient("left");
 var yaxispos;
+var ylabel;
 var minmax_values=[];
 var units=[];
 var reg_max=[],reg_min=[];
@@ -338,27 +339,27 @@ var vnames=[];
               alert('Error loading XML document');
           },
           success: function(xml){
-              var x = xml.getElementsByTagName('model');
-                for (i = 0; i < x.length; i++) { 
-                    if(x[i].getAttribute('name')=="National")
+              var x1 = xml.getElementsByTagName('model');
+                for (i = 0; i < x1.length; i++) { 
+                    if(x1[i].getAttribute('name')=="Regional")
                     {
-                      var xml1=x[i];
+                      var xml1=x1[i];
                       filepath=xml1.getElementsByTagName("path")[0].childNodes[0].nodeValue;
-                      var interval=xml1.getElementsByTagName("interval");
+                      /*var interval=xml1.getElementsByTagName("interval");
                       for (j=0;j<interval.length;j++)
                           {
                               intervals.push(interval[j].childNodes[0].nodeValue);
-                          }
+                          }*/
                         var vars=xml1.getElementsByTagName("variable");
                         for (j=0;j<vars.length;j++)
                           {
                               vnames.push(vars[j].getElementsByTagName("vname")[0].childNodes[0].nodeValue);
                               variables.push(vars[j].getElementsByTagName("fname")[0].childNodes[0].nodeValue);
                           }
-                          alert("Path :"+filepath);
-                          alert(intervals);
-                          alert(vnames);
-                          alert(variables); 
+                          //alert("Path :"+filepath);
+                          //alert(intervals);
+                          //alert(vnames);
+                          //alert(variables); 
                           break;
 
                     }
@@ -700,8 +701,8 @@ var graphPlot= function(w_var,g_date,day_no){
               var lines=legsvg.selectAll(".lines").data(dates)
                         .enter().append("line")
                         .attr("class", "line_b")
-                        .attr("x1", function (d,i){ return ((200*i)+150+(i*50));})
-                        .attr("x2", function (d,i){ return ((200*i)+250+(i*50));})
+                        .attr("x1", function (d,i){ return ((200*i)+220+(i*70));})
+                        .attr("x2", function (d,i){ return ((200*i)+320+(i*70));})
                         .attr("y1", 30)
                         .attr("y2", 30)
                         .attr("stroke","#273746")
@@ -710,10 +711,10 @@ var graphPlot= function(w_var,g_date,day_no){
               var textforlines=legsvg.selectAll(".lines").data(dates)
                         .enter().append("text")
                         .attr("class", "line_b")
-                        .attr("x", function (d,i){ return (200*i+20+(i*50));})
+                        .attr("x", function (d,i){ return (200*i+20+(i*70));})
                         .attr("y", 30)
                         .attr("class","legendText")
-                        .text(function(d){ return d+" ";});
+                        .text(function(d,i){ return d+" Day:"+(i+1);});
             }
             else{
               for(j=0;j<variables.length;j++)
@@ -737,12 +738,12 @@ var graphPlot= function(w_var,g_date,day_no){
                 .attr("x",8)
                 .attr("dy", ".71em");
                 
-            svg.append("text")
+            ylabel=svg.append("text")
               .style("font-weight","bolder")
               .style("font-size","20px")
               .attr("transform", "rotate(-90)")
               .attr("y", "-50")
-              .attr("x","-300")
+              .attr("x","-150")
               .style("text-anchor", "middle")
               .text(units[m_index]);
 
@@ -924,6 +925,8 @@ function yaxisFunction() {
               y.domain([reg_min[m_index],reg_max[m_index]]);
 
        yaxispos.attr("transform","translate("+document.body.scrollLeft+",0)");
+     /*  ylabel.text(units[m_index]);
+       ylabel.attr("transform","translate(-150,"+document.body.scrollLeft+")");*/
        yaxispos.call(yAxis);
     }
 }

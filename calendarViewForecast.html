@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- most recent version-->
 <meta charset="utf-8">
 <html>
   <head>
@@ -9,11 +10,15 @@
       }
 
       text.mono {
-        font-size: 9pt;
+        font-size: 12pt;
         font-family: Consolas, courier;
         fill: #aaa;
       }
       #dateOptions {
+            position: relative;
+            float:right;
+        }
+      #legendOptions {
             position: relative;
             float:right;
         }
@@ -51,11 +56,13 @@
 
       text.axis-workweek {
         fill: #000;
+        font-size: 12pt;
         font-weight: bold;
       }
 
       text.axis-worktime {
         fill: #000;
+        font-size: 12pt;
         font-weight: bold;
       }
       .legendsText {
@@ -67,9 +74,30 @@
         border-radius: 4px;
         font-family: "Times New Roman";
         font-size: 20px;
+        height:40px;
         background-color: #0097A7 ;
         color:#FBFCFC  ;
         text-align: center;
+      }
+      .button:hover{
+        background-color:#FBFCFC ;
+        color:#0097A7  ;
+        font-weight: bolder;
+      }
+
+      .buttonPressed{
+        border-radius: 6px;
+        box-shadow:inset 0 0 4px #6E2C00 ;
+        font-family: "Times New Roman";
+        font-size: 20px;
+        border-width: 1px;
+        height:40px;
+        background-color:#873600;
+        color:#FAFAFA  ;
+        text-align: center;
+      }
+      #legends{
+        width:970px;
       }
       .traverseButton{
         border-radius: 8px;
@@ -97,25 +125,34 @@
       }
       .paraText{
         color:#660000;
-        font-size: 15px;
+        font-size: 20px;
         font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ; 
+      }
+      #varname{
+        display: inline;
+        position: absolute;
+        text-align: left;
       }
       .formText{
         text-align: center;
         color:#660000;
-        font-size: 15px;
+        font-size: 20px;
         font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ; 
       }
       .heading{
         text-align: center;
         color:#660000;
         font-weight: bold;
-        font-size: 20px;
+        font-size: 25px;
         font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ; 
       }
       #dateList{
+        display: inline;
         text-align: right;
-        font-size: 15px;
+        font-size: 20px;
+        width:250px;
+        color:#660000;
+        border-radius: 4px;
         font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ; 
       }
     </style>
@@ -123,48 +160,61 @@
     <script src="http://d3js.org/d3.v3.js"></script>
   </head>
   <body>
-    <p class="heading"> Forecast for next three days</p>        
-    <div id="options">
-      <p class="formText">Please check the required interval you want to see</p>
-           <form class="formText">
-            <input type="radio" name="interval" value="1" onClick="callChart(1)"> 15 min<t>
+    <p class="heading"> Forecast for next three days</p> 
+    <div id= "varname"></div>       
+    <div class="formText">
+      Please check the required interval you want to see
+           <form id="intervalList">
+            <!-- <input type="radio" name="interval" value="1" onClick="callChart(1)"> 15 min<t>
             <input type="radio" name="interval" value="2" onClick="callChart(2)"> 30 min<t>
             <input type="radio" name="interval" value="4" onClick="callChart(4)"> 1 hour<t>
             <input type="radio" name="interval" value="8" onClick="callChart(8)"> 2 hours<t>
-            <input type="radio" name="interval" value="12" onClick="callChart(12)"> 3 hours<br>
+            <input type="radio" name="interval" value="12" onClick="callChart(12)"> 3 hours<br> -->
            
           </form> 
-    </div>
+    </div><br><br>
 
     <div id="dateOptions">
-          <p class="formText">Choose Date:</p>
-          <form class="formText">
+          <form >
             <select id="dateList" onchange="dateChange()" name="dates">
             </select>
             <br><br>
           </form>
     </div>
-  
+    
     <div id="chart">
     </div>
     <div id="ZoomChart">
     </div>
+    <div id="legendOptions">
+          <p class="formText">Choose Legend Type:</p>
+          <form class="formText">
+            <input type="radio" name="legendType" value="1" onClick="changeLegend(1)"> National Legend<t>
+            <input type="radio" name="legendType" value="2" onClick="changeLegend(2)"> Region-Wise Legend<t>
+            <br><br>
+          </form>
+    </div>
     <div id="legends">
     </div>
+    <br><br>
     <div id="dataset-picker">
     </div>
     <!-- <div id="nplots"><iframe src="calenderView3.html" name="iframe_b" width="100%" height="750px" ></iframe></div> -->
 
     <script type="text/javascript">
      var latlon;
+     var model;
      var variables=[];
      var vnames=[];
      var curVariable;
+     var intervals=[];
+     var steps=[];
+     var filepath;
      // var p=window.top.document.getElementById("frameId").name;
      
       //alert(p);
           $.ajax({
-          url: 'Vfile.xml',
+          url: 'master.xml',
           type: 'GET',
           dataType: 'xml',
           timeout: 1000,
@@ -172,23 +222,53 @@
               alert('Error loading XML document');
           },
           success: function(xml){
-              var xmlElement=xml.getElementsByTagName("variable");
-              for (i=0;i<xmlElement.length;i++)
+              
+                //model
+              var xmlElement=xml.getElementsByTagName("model");
+              for(i=0;i<xmlElement.length;i++)
               {
-                  variables.push(xmlElement[i].childNodes[0].nodeValue);
-                  //alert(xmlElement[i].childNodes[0].nodeValue);
-              }
-              var xmlElement=xml.getElementsByTagName("name");
-              for (i=0;i<xmlElement.length;i++)
-              {
-                  vnames.push(xmlElement[i].childNodes[0].nodeValue);
-                  //alert(xmlElement[i].childNodes[0].nodeValue);
-              }
+              if(xmlElement[i].getAttribute('name')=="Regional")
+                    {
+                      var xml1=xmlElement[i];
+                      filepath=xml1.getElementsByTagName("path")[0].childNodes[0].nodeValue;
+                      var interval=xml1.getElementsByTagName("interval");
+                      for (j=0;j<interval.length;j++)
+                          {
+                              intervals.push(interval[j].getElementsByTagName("iname")[0].childNodes[0].nodeValue);
+                              steps.push(interval[j].getElementsByTagName("steps")[0].childNodes[0].nodeValue);
+                          }
+                        var vars=xml1.getElementsByTagName("variable");
+                        for (j=0;j<vars.length;j++)
+                          {
+                              vnames.push(vars[j].getElementsByTagName("vname")[0].childNodes[0].nodeValue);
+                              variables.push(vars[j].getElementsByTagName("fname")[0].childNodes[0].nodeValue);
+                          }
+                          alert("Path :"+filepath);
+                          alert(intervals);
+                          alert(vnames);
+                          alert(variables); 
+                          var intervalList=document.getElementById("intervalList");
+                          for(k=0;k<intervals.length;k++)
+                          {
+                            var l=document.createElement("label");
+                            var op=document.createElement("input");
+                            op.setAttribute("type","radio");
+                            op.setAttribute("name","interval");
+                            op.setAttribute("onClick","callChart("+steps[k]+")");
+                            op.setAttribute("value",intervals[k]); 
+                            l.appendChild(op);
+                            l.appendChild(document.createTextNode(intervals[k]));
+                            intervalList.appendChild(l);
+                          }
+                          break;
+
+                    }
+                  }
+              var a = window.location.toString();
+              latlon = a.substring(a.indexOf("=")+1);
               curVariable=variables[0];
               datasetButtons();
-               var a = window.location.toString();
-                latlon = a.substring(a.indexOf("=")+1);
-                heatmapChart("Stats/"+curVariable+"_"+curDate+".json",latlon,4);
+              heatmapChart(filepath+curVariable+"_"+curDate+".json",latlon,4);
           }
       });
       var x = document.getElementById("dateList");
@@ -200,7 +280,7 @@
       var dateString=[];
       var days=[];
       var curDate;
-      
+      var curLegendOption=1;
       
       dateString[0]=date.getFullYear()+date.getMonth()+date.getDate();
       //option.text = date.getDate()+" - "+(date.getMonth()+1)+" - "+date.getFullYear();
@@ -220,6 +300,9 @@
       }
       dateString=["20160621","20160620","20160619","20160618","20160617"];
       curDate=dateString[0];
+
+
+      
       var svg;
       var times_4 = ["00:00", "01:00", "02:00", "03:00", "04:00", "05:00", "06:00", "07:00", "08:00","09:00", "10:00",  "11:00","12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00",  "23:00"];
       var times_1 = ["00:00","00:15", "00:30", "00:45", "01:00", "01:15", "01:30", "01:45", "02:00", "02:15", "02:30","02:45","03:00","03:15", "03:30", "03:45", "04:00", "04:15", "04:30", "04:45", "05:00", "05:15", "05:30","05:45","06:00","06:15", "06:30", "06:45", "07:00", "07:15", "07:30", "07:45", "08:00", "08:15", "08:30","08:45","09:00","09:15", "09:30", "09:45", "10:00", "10:15", "10:30", "10:45", "11:00", "11:15", "11:30","11:45","12:00","12:15", "12:30", "12:45", "13:00", "13:15", "13:30", "13:45", "14:00", "14:15", "14:30","14:45","15:00","15:15", "15:30", "15:45", "16:00", "16:15", "16:30", "16:45", "17:00", "17:15", "17:30","17:45","18:00","18:15", "18:30", "18:45", "19:00", "19:15", "19:30", "19:45", "20:00", "20:15", "20:30","20:45","21:00","21:15", "21:30", "21:45", "22:00", "22:15", "22:30", "22:45", "23:00", "23:15", "23:30","23:45"];
@@ -229,8 +312,8 @@
       function axesLabels(interval)
       {
         
-        d3.select("#chart").append("p").text("Variable: "+vnames[variables.indexOf(curVariable)]).attr("class","paraText");
-      var margin = { top: 50, right: 0, bottom: 50, left: 30 },
+        d3.select("#varname").append("p").text("Variable: "+vnames[variables.indexOf(curVariable)]).attr("class","paraText");
+      var margin = { top: 50, right: 0, bottom: 70, left: 40 },
           width = 960 - margin.left - margin.right,
           height = 220 - margin.top - margin.bottom,
           gridSize = Math.floor((width*interval) / 96),
@@ -241,7 +324,7 @@
           times = [];
 
           if (interval==12)
-            gridSize=gridSize/2;
+            gridSize=gridSize/1.95;
           if (interval==8)
             gridSize=gridSize/1.5;
           if(interval<4)
@@ -269,7 +352,7 @@
           .attr("width", width + margin.left + margin.right)
           .attr("height", height + margin.top + margin.bottom)
           .append("g")
-          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+          .attr("transform", "translate(" + margin.left + "," + "20)");
 
       var dayLabels = svg.selectAll(".dayLabel")
           .data(days)
@@ -351,7 +434,7 @@
             }
         function disp() {
           /*d3.select("#chart").append("p").text("Variable:  "+curVariable).style("font-size","20px").style("align","center");*/
-          var margin = { top: 50, right: 0, bottom: 100, left: 30 },
+          var margin = { top: 50, right: 0, bottom: 70, left: 40 },
           width = 960 - margin.left - margin.right,
           height = 220 - margin.top - margin.bottom,
           gridSize = Math.floor((width*interval) / 96),
@@ -363,10 +446,13 @@
           var tip;
           var factor=1;
           var colorScale = d3.scale.quantile()
-              .domain([minmax[0], minmax[1]])
               .range(colors);
+          if(curLegendOption==1)
+            colorScale.domain([minmax[0], minmax[1]]);
+          else 
+            colorScale.domain([Math.min.apply(null,val),Math.max.apply(null,val.slice(10))]);
           if (interval==12)
-            gridSize=gridSize/2;
+            gridSize=gridSize/1.95;
           if (interval==8)
             gridSize=gridSize/1.5;
           if(interval<4)
@@ -408,12 +494,12 @@
           cards.exit().remove();
           
           var legsvg = d3.select("#legends").append("svg")
-          .attr("width", width + margin.left + margin.right)
+          .attr("width", gridSize*12)
           .attr("height", 5 + margin.top + margin.bottom)
           .append("g")
           .attr("transform", "translate(" + margin.left + ",0)");
           var legend = legsvg.selectAll(".legend")
-              .data(colorScale.quantiles().concat(minmax[1]), function(d) { return d; });
+              .data([minmax[0]].concat(colorScale.quantiles()), function(d) { return d; });
           console.log("color quantiles");
           console.log(colorScale.quantiles());
           legend.enter().append("g")
@@ -421,48 +507,32 @@
 
           legend.append("rect")
             .attr("x", function(d, i) { if(interval<4)return legendElementWidth * i; else return gridSize*i; })
-            .attr("y", height)
+            .attr("y", margin.top)
             .attr("width", function(d,i) { if(interval<4) return legendElementWidth; else return gridSize;})
             .attr("height", function(d,i){ if (interval<4) return legendElementWidth / 2; else return gridSize/2;})
             .style("fill", function(d, i) { return colors[i]; });
 
           legend.append("text")
-            .text(function(d) { return "≥ " + d.toFixed(2); })
+            .text(function(d) { if(minmax[1]-minmax[0]>=8) 
+                                  return "  " +Math.round(d); 
+                                else 
+                                  return "  " +d.toFixed(2);})
             .attr("class","legendsText")
             .attr("x", function(d, i) { if(interval<4)return legendElementWidth * i; else return gridSize*i;  })
-            .attr("y", function(d,i){ if (interval<4) return height + legendElementWidth-5; else return height + gridSize-5;});
+            .attr("y", function(d,i){ if (interval<4) return margin.top + legendElementWidth-5; else return margin.top + gridSize-5;});
           
 
           legend.append("text")
             .text("units in "+unit)
             .attr("x", gridSize * 2 )
-            .attr("y", function(d,i){ if (interval<4) return height + legendElementWidth+15; else return height + gridSize+15;});
+            .attr("y", function(d,i){ if (interval<4) return margin.top + legendElementWidth+10; else return margin.top + gridSize+10;});
           
           legend.exit().remove();
 
-       /* var zoomButton;
-        if(interval==1)
-        {
-          zoomButton=d3.select("#chart")
-            .append("input")
-            .attr("value", "zoom")
-            .attr("type", "button")
-            .attr("class", "button")
-            .on("click", function(d) {
-            document.getElementById("ZoomChart").innerHTML = "";
-               createZoomChart(0,11);
-
-        });
-        }*/
 
         } 
       };
-     // var a = window.location.toString();
-      //var latlon = a.substring(a.indexOf("=")+1);
-      //alert(latlon);
-     // heatmapChart("temperature_"+dateString[0],latlon,4);
-      //heatmapChart(curVariable+"_"+dateString[0]+".json",latlon,4);
-      //appending two buttons on the page for each dataset to be displayed
+     
       function datasetButtons(){
 
       var datasetpicker = d3.select("#dataset-picker").selectAll(".dataset-button")
@@ -479,11 +549,14 @@
         .attr("x",function(d,i){  return 30*(i%4);   })
         .attr("y",function(d,i){ return 50+(30*(i/4));})
         .on("click", function(d) {
+          $(".button.buttonPressed").removeClass("buttonPressed");
+          $(this).addClass("buttonPressed");
           document.getElementById("chart").innerHTML = "";
+          document.getElementById("varname").innerHTML = "";
           document.getElementById("legends").innerHTML = "";
           document.getElementById("ZoomChart").innerHTML = "";
           curVariable=d;
-          heatmapChart("Stats/"+d+"_"+curDate+".json",latlon,4);
+          heatmapChart(filepath+d+"_"+curDate+".json",latlon,4);
 
         });
       }
@@ -496,9 +569,19 @@
           document.getElementById("chart").innerHTML = "";
            document.getElementById("legends").innerHTML = "";
          document.getElementById("ZoomChart").innerHTML = "";
-          heatmapChart("Stats/"+curVariable+"_"+curDate+".json",latlon,interval);
+         document.getElementById("varname").innerHTML = "";
+          heatmapChart(filepath+curVariable+"_"+curDate+".json",latlon,interval);
           /*if(interval==1)
             createZoomChart(13,25);*/
+        }
+
+        function changeLegend(option){
+          document.getElementById("chart").innerHTML = "";
+          document.getElementById("legends").innerHTML = "";
+          document.getElementById("ZoomChart").innerHTML = "";
+          document.getElementById("varname").innerHTML = "";
+          curLegendOption=option;
+          heatmapChart(filepath+curVariable+"_"+curDate+".json",latlon,4);
         }
 
 
@@ -512,7 +595,8 @@
           document.getElementById("chart").innerHTML = "";
            document.getElementById("legends").innerHTML = "";
           document.getElementById("ZoomChart").innerHTML = "";
-          heatmapChart("Stats/"+curVariable+"_"+curDate+".json",latlon,4);
+          document.getElementById("varname").innerHTML = "";
+          heatmapChart(filepath+curVariable+"_"+curDate+".json",latlon,4);
           //to load whole new files of that particular date.
         }
 
@@ -520,11 +604,11 @@
         function createZoomChart(start,end,interval)
         {
           //d3.select("#ZoomChart").append("p").text("More detailed readings ").attr("class","ZoomparaText");
-           d3.select("#ZoomChart").append("p").text("Variable: "+vnames[variables.indexOf(curVariable)]).attr("class","paraText");
-        var margin = { top: 50, right: 30, bottom: 100, left: 30 },
-          width = 600 - margin.left - margin.right,
-          height = 200 - margin.top - margin.bottom,
-          gridSize = Math.floor(width / 11),
+           d3.select("#varname").append("p").text("Variable: "+vnames[variables.indexOf(curVariable)]).attr("class","paraText");
+        var margin = { top: 20, right: 0, bottom: 70, left: 40 },
+          width = 760 - margin.left - margin.right,
+          height = 220 - margin.top - margin.bottom,
+          gridSize = Math.floor(width / 12),
           legendElementWidth = gridSize*1.5,
           buckets = 9,
           colors = ["#081d58","#253494","#225ea8","#1d91c0","#ffff00","#ffc300","#ff5733","#c70039"]; // alternatively colorbrewer.YlGnBu[9]
@@ -556,7 +640,7 @@
             times = times_1.slice(start);*/
 
         var svgZoom = d3.select("#ZoomChart").append("svg")
-          .attr("width", width + margin.left + margin.right+100)
+          .attr("width", width + margin.left + margin.right+70)
           .attr("height", height + margin.top + margin.bottom)
           .append("g")
           .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -567,7 +651,6 @@
             .text(function (d) { return d; })
             .attr("x", 0)
             .attr("y", function (d, i) { return i * gridSize; })
-            .style("font-size","12px")
             .style("text-anchor", "end")
             .attr("transform", "translate(-4," + gridSize / 1.5 + ")")
             .attr("class", function (d, i) { return "dayLabel mono axis axis-workweek"; });
@@ -578,7 +661,6 @@
             .text(function(d) { return d; })
             .attr("x", function(d, i) { return i*gridSize; })
             .attr("y", 0)
-            .style("font-size","12px")
             .style("text-anchor", "middle")
             .attr("transform", "translate(" + gridSize / 2 + ", -6)")
             .attr("class", function(d, i) { return "timeLabel mono axis axis-worktime"; });
@@ -634,14 +716,17 @@
           dispZoom();
           }); 
         function dispZoom() {
+          //alert(Math.min.apply(null,val)+"   "+Math.max.apply(null,val.slice(1)));
           var i=-1;
           var j=-1;
           var tip;
           var factor=1;
           var colorScale = d3.scale.quantile()
-              .domain([minmax[0], minmax[1]])
               .range(colors);
-  
+          if(curLegendOption==1)
+            colorScale.domain([minmax[0], minmax[1]]);
+          else 
+            colorScale.domain([Math.min.apply(null,val),Math.max.apply(null,val.slice(1))]);
           var cards = svgZoom.selectAll(".hour")
               .data(val);
 
@@ -657,7 +742,7 @@
               .attr("height", gridSize)
               .style("fill", colors[0]);
 
-          cards.transition().duration(1000)
+          cards.transition().duration(500)
               .style("fill", function(d) { if(d>minmax[1]) return "#FBFCFC"; else return colorScale(d); });
 
           cards.select("title").text(function(d) { return d; });
@@ -666,43 +751,47 @@
 
 
           var legsvg = d3.select("#legends").append("svg")
-          .attr("width", width + margin.left + margin.right)
+          .attr("width", gridSize*12)
           .attr("height", 5 + margin.top + margin.bottom)
           .append("g")
           .attr("transform", "translate(" + margin.left + ",0)");
           
 
           var legend = legsvg.selectAll(".legend")
-              .data(colorScale.quantiles().concat([minmax[1]]), function(d) { return d; });
+              .data([minmax[0]].concat(colorScale.quantiles()), function(d) { return d; });
           console.log("color quantiles");
           console.log(colorScale.quantiles());
           legend.enter().append("g")
               .attr("class", "legend");
 
           legend.append("rect")
-            .attr("x", function(d, i) { return legendElementWidth*i; })
-            .attr("y", height)
-            .attr("width", legendElementWidth)
+            .attr("x", function(d, i) { return gridSize*i; })
+            .attr("y", margin.top)
+            .attr("width", gridSize)
             .attr("height", function(d,i){  return gridSize/2;})
             .style("fill", function(d, i) { return colors[i]; });
 
           legend.append("text")
-            .text(function(d) { return "≥ " + d.toFixed(2); })
+            .text(function(d) {
+                                if(minmax[1]-minmax[0]>=8) 
+                                  return "   " +Math.round(d); 
+                                else 
+                                  return "   " +d.toFixed(2);  })
             .attr("class","legendsText")
-            .attr("x", function(d, i) {  return legendElementWidth*i;  })
-            .attr("y", function(d,i){ return height + gridSize-5;});
+            .attr("x", function(d, i) {  return gridSize*i;  })
+            .attr("y", function(d,i){ return margin.top + gridSize-5;});
           
 
           legend.append("text")
             .text("units in "+unit)
             .attr("x", gridSize * 2 )
-            .attr("y", function(d,i){ return height + gridSize+15;});
+            .attr("y", function(d,i){ return margin.top + gridSize+15;});
           
           legend.exit().remove();
 
         }
         }
-        heatmapChart("Stats/"+curVariable+"_"+curDate+".json",latlon,interval);
+        heatmapChart(filepath+curVariable+"_"+curDate+".json",latlon,interval);
 
         var leftButton=d3.select("#ZoomChart")
             .append("input")
@@ -712,8 +801,9 @@
             .on("click", function(d) {
               document.getElementById("ZoomChart").innerHTML = "";
               document.getElementById("legends").innerHTML = "";
+              document.getElementById("varname").innerHTML = "";
               if(start>0)
-               createZoomChart(start-1,end-1,interval);
+               createZoomChart(start-11,end-11,interval);
              else
               createZoomChart(0,11,interval);});
 
@@ -725,10 +815,12 @@
             .on("click", function(d) {
               document.getElementById("ZoomChart").innerHTML = "";
               document.getElementById("legends").innerHTML = "";
-              if(end<95)
-               createZoomChart(start+1,end+1,interval);
+              document.getElementById("varname").innerHTML = "";
+              var e=96/interval;
+              if(end<e-12)
+               createZoomChart(start+11,end+11,interval);
               else
-               createZoomChart(84,95,interval);
+               createZoomChart(e-12,e-1,interval);
 
         });
 
