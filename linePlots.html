@@ -212,7 +212,7 @@ body {
   }
 </style>
 <body>
-  <div><p class="title">Graphs- Three Day Forecast</p></div>
+  <div id="heading"></div>
   <div id="dateOptions">
           <form class="formText">
             <select id="dateList" onchange="dateChange()" name="dates">
@@ -244,7 +244,7 @@ var margin = {top: 20, right: 80, bottom: 40, left: 50},
     height = 400 - margin.top - margin.bottom;
 //var variables=["temperature","mslp","pres","swflux"];
 //var colors = ["#1ABC9C","#225ea8","#F1C40F","#ff5733","#FF00FF"];
-var colors=["#B02F11","#0000DB","#FFFF1A","#00DB6E","#00DBDB"];
+var colors=[];
 var parseDate = d3.time.format("%Y%m%d").parse;
 var date=new Date();
 date.setHours(0,0,0,0);
@@ -313,7 +313,7 @@ var isUpdate=0;
 var compare=0;
 var recCounter=0;// for distiguishing recent readings and changing stroke style in case of compare.
 var line = d3.svg.line()
-    .x(function(d) { index++; if(index>0) u_date.setTime(u_date.getTime()+minOffset); return x(u_date); })
+    .x(function(d) { index++; if(index==0) return x(ref_date.getTime()-minOffset); if(index>0) u_date.setTime(u_date.getTime()+minOffset); return x(u_date); })
     .y(function(d) { if(d.val==9999) return y(0); return y(d.val); })
     .interpolate("linear");
 
@@ -325,6 +325,9 @@ var svg1;
 var filepath;
 var intervals=[];
 var latlon;
+var curPlace;
+var curModel;
+var title;
 var variables=[];
 var var_names=[];
 var curVariable;
@@ -339,12 +342,16 @@ var vnames=[];
               alert('Error loading XML document');
           },
           success: function(xml){
+              /*var a = window.location.toString();
+              latlon = a.substring(a.indexOf("=")+1);*/
+              getQueryVariable();
               var x1 = xml.getElementsByTagName('model');
                 for (i = 0; i < x1.length; i++) { 
-                    if(x1[i].getAttribute('name')=="Regional")
+                    if(x1[i].getAttribute('name')==curModel)
                     {
                       var xml1=x1[i];
                       filepath=xml1.getElementsByTagName("path")[0].childNodes[0].nodeValue;
+                      title=xml1.getElementsByTagName("title")[0].childNodes[0].nodeValue;
                       /*var interval=xml1.getElementsByTagName("interval");
                       for (j=0;j<interval.length;j++)
                           {
@@ -355,6 +362,7 @@ var vnames=[];
                           {
                               vnames.push(vars[j].getElementsByTagName("vname")[0].childNodes[0].nodeValue);
                               variables.push(vars[j].getElementsByTagName("fname")[0].childNodes[0].nodeValue);
+                              colors.push(vars[j].getElementsByTagName("lineColor")[0].childNodes[0].nodeValue);
                           }
                           //alert("Path :"+filepath);
                           //alert(intervals);
@@ -369,8 +377,7 @@ var vnames=[];
               datasetButtons();
               dateString=["20160621","20160620","20160619","20160618","20160617"];
               curDate=dateString[0];
-              var a = window.location.toString();
-              latlon = a.substring(a.indexOf("=")+1);
+              d3.select("#heading").append("p").text(title).attr("class","title").append("text").text("    Location: "+curPlace).attr("class","title");
               //alert(vnames);
               //alert(variables);
               graphPlot(curVariable,curDate,def_day_no);
@@ -378,6 +385,21 @@ var vnames=[];
           }
       });
 
+function getQueryVariable()
+{
+       var query = window.location.search.substring(1);
+       var vars = query.split("&");
+       //alert(vars);
+       var pair = vars[0].split("=");
+       latlon=pair[1];
+       //alert(latlon);
+       pair=vars[1].split("=");
+       curPlace=pair[1];
+       //alert(curPlace);
+       pair=vars[2].split("=");
+       curModel=pair[1];    
+       //alert(curModel);   
+}
 var getGraph=function (g_variable,g_date,day_no){
   var unit;
   
@@ -705,7 +727,7 @@ var graphPlot= function(w_var,g_date,day_no){
                         .attr("x2", function (d,i){ return ((200*i)+320+(i*70));})
                         .attr("y1", 30)
                         .attr("y2", 30)
-                        .attr("stroke","#273746")
+                        .attr("stroke",function(){return colors[variables.indexOf(gv)];})
                         .style("stroke-opacity", 1)
                         .style("stroke-dasharray",function(d,i){if(d==0) return (0,0); return (Math.pow(2,(6-(2*i))),Math.pow(2,(6-(2*i))));});
               var textforlines=legsvg.selectAll(".lines").data(dates)
@@ -826,7 +848,7 @@ function dayChoice()
                   .append("input")
                   .attr("type","button")
                   .attr("class","daybutton")
-                  .attr("value",function(d){ if (d==0) return "All"; return "Day :"+d;})
+                  .attr("value",function(d){ if (d==0) return "All days"; return "Day :"+d;})
                   .on("click",function(d){ 
                     $(".daybutton.daybuttonPressed").removeClass("daybuttonPressed");
                     $(this).addClass("daybuttonPressed");
@@ -870,7 +892,7 @@ function dateChange(){
           document.getElementById("varhead").innerHTML = "";
           document.getElementById("plot").innerHTML = "";
           document.getElementById("legends").innerHTML="";
-          graphPlot(curVariable,curDate,0);
+          graphPlot(curVariable,curDate,def_day_no);
           //to load whole new files of that particular date.
         }
 

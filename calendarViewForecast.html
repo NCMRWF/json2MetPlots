@@ -203,6 +203,8 @@
 
     <script type="text/javascript">
      var latlon;
+     var curPlace;
+     var curModel;
      var model;
      var variables=[];
      var vnames=[];
@@ -223,11 +225,11 @@
           },
           success: function(xml){
               
-                //model
+              getQueryVariable();
               var xmlElement=xml.getElementsByTagName("model");
               for(i=0;i<xmlElement.length;i++)
               {
-              if(xmlElement[i].getAttribute('name')=="Regional")
+              if(xmlElement[i].getAttribute('name')==curModel)
                     {
                       var xml1=xmlElement[i];
                       filepath=xml1.getElementsByTagName("path")[0].childNodes[0].nodeValue;
@@ -243,10 +245,10 @@
                               vnames.push(vars[j].getElementsByTagName("vname")[0].childNodes[0].nodeValue);
                               variables.push(vars[j].getElementsByTagName("fname")[0].childNodes[0].nodeValue);
                           }
-                          alert("Path :"+filepath);
+                          /*alert("Path :"+filepath);
                           alert(intervals);
                           alert(vnames);
-                          alert(variables); 
+                          alert(variables); */
                           var intervalList=document.getElementById("intervalList");
                           for(k=0;k<intervals.length;k++)
                           {
@@ -264,13 +266,31 @@
 
                     }
                   }
-              var a = window.location.toString();
-              latlon = a.substring(a.indexOf("=")+1);
               curVariable=variables[0];
               datasetButtons();
               heatmapChart(filepath+curVariable+"_"+curDate+".json",latlon,4);
           }
       });
+
+    function getQueryVariable()
+    {
+       var query = window.location.search.substring(1);
+       var vars = query.split("&");
+       //alert(vars);
+       var pair = vars[0].split("=");
+       latlon=pair[1];
+       //alert(latlon);
+       pair=vars[1].split("=");
+       curPlace=pair[1];
+       //alert(curPlace);
+       pair=vars[2].split("=");
+       curModel=pair[1];    
+       //alert(curModel);   
+    }
+
+
+
+
       var x = document.getElementById("dateList");
       var k=0;
       var DOW=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];

@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <page>
 	<model name="Regional">
-		<path>Stats/National/</path>
+		<path>Stats/Regional/</path>
+		<forecastDays>3</forecastDays>
+		<title> NCUM REGIONAL MODEL AT 4KM </title>
 		<frequency>15 min</frequency>
 		<intervals>
 			<interval>
@@ -29,62 +31,183 @@
 			<variable>
 				<vname>Temperature</vname>
 				<fname>temperature</fname>
+				<lineColor>#B02F11</lineColor>
+				<calendarColor>
+					<color>#081d58</color>
+					<color>#253494</color>
+					<color>#225ea8</color>
+					<color>#1d91c0</color>
+					<color>#ffff00</color>
+					<color>#ffc300</color>
+					<color>#ff5733</color>
+					<color>#c70039</color>
+				</calendarColor>
 				<desc></desc>
 			</variable>
 			<variable>
 				<vname>Pressure</vname>
 				<fname>pres</fname>
+				<lineColor>#0000DB</lineColor>
+				<calendarColor>
+					<color>#081d58</color>
+					<color>#253494</color>
+					<color>#225ea8</color>
+					<color>#1d91c0</color>
+					<color>#ffff00</color>
+					<color>#ffc300</color>
+					<color>#ff5733</color>
+					<color>#c70039</color>
+				</calendarColor>
 				<desc></desc>
 			</variable>
 			<variable>
 				<vname>Humidity</vname>
 				<fname>shumid</fname>
+				<lineColor>#FFFF1A</lineColor>
+				<calendarColor>
+					<color>#081d58</color>
+					<color>#253494</color>
+					<color>#225ea8</color>
+					<color>#1d91c0</color>
+					<color>#ffff00</color>
+					<color>#ffc300</color>
+					<color>#ff5733</color>
+					<color>#c70039</color>
+				</calendarColor>
 				<desc></desc>
 			</variable>
 			<variable>
 				<vname>Short Wave Flux</vname>
 				<fname>swflux</fname>
+				<lineColor>#00DB6E</lineColor>
+				<calendarColor>
+					<color>#081d58</color>
+					<color>#253494</color>
+					<color>#225ea8</color>
+					<color>#1d91c0</color>
+					<color>#ffff00</color>
+					<color>#ffc300</color>
+					<color>#ff5733</color>
+					<color>#c70039</color>
+				</calendarColor>
 				<desc></desc>
 			</variable>
 			<variable>
 				<vname>Mean Sea Level Pressure</vname>
 				<fname>mslp</fname>
+				<lineColor>#00DBDB</lineColor>
+				<calendarColor>
+					<color>#081d58</color>
+					<color>#253494</color>
+					<color>#225ea8</color>
+					<color>#1d91c0</color>
+					<color>#ffff00</color>
+					<color>#ffc300</color>
+					<color>#ff5733</color>
+					<color>#c70039</color>
+				</calendarColor>
 				<desc></desc>
 			</variable>
 		</variables>
 	</model>
 	<model name="Global">
+		<title>NCUM Global 25 km</title>
 		<path>Stats/Global/</path>
+		<forecastDays>5</forecastDays>
 		<frequency>1 hour</frequency>
 		<intervals>
-			<interval>1 hour</interval>
-			<interval>2 hours</interval>
-			<interval>3 hours</interval>
+			<interval>
+				<iname>1 hour</iname>
+				<steps>4</steps>
+			</interval>
+			<interval>
+				<iname>2 hours</iname>
+				<steps>8</steps>
+			</interval>
+			<interval>
+				<iname>3 hours</iname>
+				<steps>12</steps>
+			</interval>
 		</intervals>
 		<variables>
 			<variable>
 				<vname>Temperature</vname>
 				<fname>temperature</fname>
+				<lineColor>#B02F11</lineColor>
+				<calendarColor>
+					<color>#081d58</color>
+					<color>#253494</color>
+					<color>#225ea8</color>
+					<color>#1d91c0</color>
+					<color>#ffff00</color>
+					<color>#ffc300</color>
+					<color>#ff5733</color>
+					<color>#c70039</color>
+				</calendarColor>
 				<desc></desc>
 			</variable>
 			<variable>
 				<vname>Pressure</vname>
 				<fname>pres</fname>
+				<lineColor>#0000DB</lineColor>
+				<calendarColor>
+					<color>#081d58</color>
+					<color>#253494</color>
+					<color>#225ea8</color>
+					<color>#1d91c0</color>
+					<color>#ffff00</color>
+					<color>#ffc300</color>
+					<color>#ff5733</color>
+					<color>#c70039</color>
+				</calendarColor>
 				<desc></desc>
 			</variable>
 			<variable>
 				<vname>Humidity</vname>
 				<fname>shumid</fname>
+				<lineColor>#FFFF1A</lineColor>
+				<calendarColor>
+					<color>#081d58</color>
+					<color>#253494</color>
+					<color>#225ea8</color>
+					<color>#1d91c0</color>
+					<color>#ffff00</color>
+					<color>#ffc300</color>
+					<color>#ff5733</color>
+					<color>#c70039</color>
+				</calendarColor>
 				<desc></desc>
 			</variable>
 			<variable>
 				<vname>Short Wave Flux</vname>
 				<fname>swflux</fname>
+				<lineColor>#00DB6E</lineColor>
+				<calendarColor>
+					<color>#081d58</color>
+					<color>#253494</color>
+					<color>#225ea8</color>
+					<color>#1d91c0</color>
+					<color>#ffff00</color>
+					<color>#ffc300</color>
+					<color>#ff5733</color>
+					<color>#c70039</color>
+				</calendarColor>
 				<desc></desc>
 			</variable>
 			<variable>
 				<vname>Mean Sea Level Pressure</vname>
 				<fname>mslp</fname>
+				<lineColor>#00DBDB</lineColor>
+				<calendarColor>
+					<color>#081d58</color>
+					<color>#253494</color>
+					<color>#225ea8</color>
+					<color>#1d91c0</color>
+					<color>#ffff00</color>
+					<color>#ffc300</color>
+					<color>#ff5733</color>
+					<color>#c70039</color>
+				</calendarColor>
 				<desc></desc>
 			</variable>
 		</variables>
