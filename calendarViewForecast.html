@@ -146,6 +146,14 @@
         font-size: 25px;
         font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ; 
       }
+      .heading1{
+        text-align: right;
+        float:right;
+        color:#660000;
+        font-weight: bold;
+        font-size: 25px;
+        font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ; 
+      }
       #dateList{
         display: inline;
         text-align: right;
@@ -160,7 +168,7 @@
     <script src="http://d3js.org/d3.v3.js"></script>
   </head>
   <body>
-    <p class="heading"> Forecast for next three days</p> 
+    <div id="heading"></div>
     <div id= "varname"></div>       
     <div class="formText">
       Please check the required interval you want to see
@@ -212,6 +220,11 @@
      var intervals=[];
      var steps=[];
      var filepath;
+     var title;
+     var freq;
+     var curInterval;
+     var colors=[];
+     var curVarno;
      // var p=window.top.document.getElementById("frameId").name;
      
       //alert(p);
@@ -233,6 +246,12 @@
                     {
                       var xml1=xmlElement[i];
                       filepath=xml1.getElementsByTagName("path")[0].childNodes[0].nodeValue;
+                      title=xml1.getElementsByTagName("title")[0].childNodes[0].nodeValue;
+                      var f=xml1.getElementsByTagName("frequency")[0].childNodes[0].nodeValue;
+                      if(f=="15 min")
+                        freq=1;
+                      else
+                        freq=4;
                       var interval=xml1.getElementsByTagName("interval");
                       for (j=0;j<interval.length;j++)
                           {
@@ -244,7 +263,13 @@
                           {
                               vnames.push(vars[j].getElementsByTagName("vname")[0].childNodes[0].nodeValue);
                               variables.push(vars[j].getElementsByTagName("fname")[0].childNodes[0].nodeValue);
+                              var cc=vars[j].getElementsByTagName("calendarColor")[0].getElementsByTagName("color");
+                              var temp=[];
+                              for(k=0;k<cc.length;k++)
+                                temp.push(cc[k].childNodes[0].nodeValue);
+                              colors.push(temp);
                           }
+
                           /*alert("Path :"+filepath);
                           alert(intervals);
                           alert(vnames);
@@ -267,8 +292,12 @@
                     }
                   }
               curVariable=variables[0];
+              curVarno=0;
+              d3.select("#heading").append("p").text(title).attr("class","heading").append("text").text(" Location :"+curPlace).attr("class","heading1");
               datasetButtons();
-              heatmapChart(filepath+curVariable+"_"+curDate+".json",latlon,4);
+              curInterval=parseInt(steps[0],10);
+              alert(curInterval+1);
+              heatmapChart(filepath+curVariable+"_"+curDate+".json",latlon,curInterval);
           }
       });
 
@@ -296,6 +325,7 @@
       var DOW=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
       var option = document.createElement("option");
       var date=new Date();
+      var ref_date=new Date(date);
       var dateOffset = (24*60*60*1000);
       var dateString=[];
       var days=[];
@@ -336,11 +366,9 @@
       var margin = { top: 50, right: 0, bottom: 70, left: 40 },
           width = 960 - margin.left - margin.right,
           height = 220 - margin.top - margin.bottom,
-          gridSize = Math.floor((width*interval) / 96),
+          gridSize = Math.floor((width*interval*freq) / 96),
           legendElementWidth = gridSize*2,
-          buckets = 9,
-          colors = ["#081d58","#253494","#225ea8","#1d91c0","#ffff00","#ffc300","#ff5733","#c70039"], // alternatively colorbrewer.YlGnBu[9]
-          //days = ["Mo", "Tu", "We"],
+          buckets = 9;
           times = [];
 
           if (interval==12)
@@ -353,7 +381,7 @@
             gridSize=gridSize*2;
           }
 
-          switch(interval)
+          switch(interval*freq)
           {
               case 1: times=times_4;
                       break;
@@ -457,16 +485,15 @@
           var margin = { top: 50, right: 0, bottom: 70, left: 40 },
           width = 960 - margin.left - margin.right,
           height = 220 - margin.top - margin.bottom,
-          gridSize = Math.floor((width*interval) / 96),
+          gridSize = Math.floor((width*interval*freq) / 96),
           legendElementWidth = gridSize*2,
-          buckets = 9,
-          colors = ["#081d58","#253494","#225ea8","#1d91c0","#ffff00","#ffc300","#ff5733","#c70039"]; // alternatively colorbrewer.YlGnBu[9]
+          buckets = 9;
           var i=-1;
           var j=-1;
           var tip;
           var factor=1;
           var colorScale = d3.scale.quantile()
-              .range(colors);
+              .range(colors[curVarno]);
           if(curLegendOption==1)
             colorScale.domain([minmax[0], minmax[1]]);
           else 
@@ -504,7 +531,7 @@
               .attr("class", "hour bordered")
               .attr("width", gridSize)
               .attr("height", gridSize)
-              .style("fill", colors[0]);
+              .style("fill", colors[curVarno][0]);
 
           cards.transition().duration(500)
               .style("fill", function(d) { if(d>minmax[1]) return "#FBFCFC"; else return colorScale(d); });
@@ -530,7 +557,7 @@
             .attr("y", margin.top)
             .attr("width", function(d,i) { if(interval<4) return legendElementWidth; else return gridSize;})
             .attr("height", function(d,i){ if (interval<4) return legendElementWidth / 2; else return gridSize/2;})
-            .style("fill", function(d, i) { return colors[i]; });
+            .style("fill", function(d, i) { return colors[curVarno][i]; });
 
           legend.append("text")
             .text(function(d) { if(minmax[1]-minmax[0]>=8) 
@@ -576,7 +603,8 @@
           document.getElementById("legends").innerHTML = "";
           document.getElementById("ZoomChart").innerHTML = "";
           curVariable=d;
-          heatmapChart(filepath+d+"_"+curDate+".json",latlon,4);
+          curVarno=variables.indexOf(d);
+          heatmapChart(filepath+d+"_"+curDate+".json",latlon,curInterval);
 
         });
       }
@@ -590,7 +618,8 @@
            document.getElementById("legends").innerHTML = "";
          document.getElementById("ZoomChart").innerHTML = "";
          document.getElementById("varname").innerHTML = "";
-          heatmapChart(filepath+curVariable+"_"+curDate+".json",latlon,interval);
+         curInterval=interval;
+          heatmapChart(filepath+curVariable+"_"+curDate+".json",latlon,curInterval);
           /*if(interval==1)
             createZoomChart(13,25);*/
         }
@@ -601,22 +630,28 @@
           document.getElementById("ZoomChart").innerHTML = "";
           document.getElementById("varname").innerHTML = "";
           curLegendOption=option;
-          heatmapChart(filepath+curVariable+"_"+curDate+".json",latlon,4);
+          heatmapChart(filepath+curVariable+"_"+curDate+".json",latlon,curInterval);
         }
 
 
         function dateChange(){
-          var date=document.getElementById("dateList").value;
+          //var date=document.getElementById("dateList").value;
           //alert(date);
           var list=document.getElementById("dateList");
           var index=list.selectedIndex;
+          var rdate=new Date(ref_date);
+          days.length=0;
+          rdate.setTime(rdate.getTime()-(index*dateOffset));
+          days.push(DOW[(rdate.getDay())%7]);
+          days.push(DOW[(rdate.getDay()+1)%7]);
+          days.push(DOW[(rdate.getDay()+2)%7]);
           curDate=dateString[index];
           //alert(index);
           document.getElementById("chart").innerHTML = "";
            document.getElementById("legends").innerHTML = "";
           document.getElementById("ZoomChart").innerHTML = "";
           document.getElementById("varname").innerHTML = "";
-          heatmapChart(filepath+curVariable+"_"+curDate+".json",latlon,4);
+          heatmapChart(filepath+curVariable+"_"+curDate+".json",latlon,curInterval);
           //to load whole new files of that particular date.
         }
 
@@ -630,10 +665,8 @@
           height = 220 - margin.top - margin.bottom,
           gridSize = Math.floor(width / 12),
           legendElementWidth = gridSize*1.5,
-          buckets = 9,
-          colors = ["#081d58","#253494","#225ea8","#1d91c0","#ffff00","#ffc300","#ff5733","#c70039"]; // alternatively colorbrewer.YlGnBu[9]
-          //days = ["Wed","Thu","Fri"];
-           switch(interval)
+          buckets = 9;
+           switch(interval*freq)
           {
               case 1:{if(start<84)
                           times = times_1.slice(start,end+1);
@@ -742,7 +775,7 @@
           var tip;
           var factor=1;
           var colorScale = d3.scale.quantile()
-              .range(colors);
+              .range(colors[curVarno]);
           if(curLegendOption==1)
             colorScale.domain([minmax[0], minmax[1]]);
           else 
@@ -760,7 +793,7 @@
               .attr("class", "hour bordered")
               .attr("width", gridSize)
               .attr("height", gridSize)
-              .style("fill", colors[0]);
+              .style("fill", colors[curVarno][0]);
 
           cards.transition().duration(500)
               .style("fill", function(d) { if(d>minmax[1]) return "#FBFCFC"; else return colorScale(d); });
@@ -789,7 +822,7 @@
             .attr("y", margin.top)
             .attr("width", gridSize)
             .attr("height", function(d,i){  return gridSize/2;})
-            .style("fill", function(d, i) { return colors[i]; });
+            .style("fill", function(d, i) { return colors[curVarno][i]; });
 
           legend.append("text")
             .text(function(d) {
