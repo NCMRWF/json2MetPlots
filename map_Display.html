@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- most recent version -->
+<!-- tooltip corrected -->
 <meta charset="utf-8">
 <head>
   
@@ -87,6 +87,14 @@
         display: inline;
         font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ; 
       }
+      #modelList{
+        text-align: left;
+        font-size: 20px;
+        color:#273746;
+        font-weight: bold;
+        display: inline;
+        font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ; 
+      }
        #urlList{
         text-align: left;
         font-size: 20px;
@@ -105,7 +113,7 @@
        }
        #substations{
          font-weight: bold;
-          position: relative;
+          position: absolute;
           width:450px;
           height:230px;
           margin-top:10px;
@@ -139,19 +147,32 @@
         }
         
          a:hover {
-            text-decoration: none;
-            background-color:#FFFF33;
-            
+            text-decoration: none;            
         }
         .sublist:hover {
             text-decoration: underline;
-            color:#FFFF33;
+            color:#12FF33;
         }
 
         .sublistclicked {
            color:#00CC00 ;
         }
-  			
+  			div.tooltip {  
+    position: absolute;     
+    text-align: center; 
+    color:#154360;              
+    height: 20px;         
+    padding: 2px;       
+    font: 15px sans-serif bold;    
+    border: 0px;    
+    border-radius: 8px;     
+    pointer-events: none;     
+    }
+    #slink{
+      position:absolute;
+
+    }
+
   </style>
 </head>
 <body>
@@ -163,30 +184,36 @@
           <div id="subtitle">Glimpse of Weather Conditions in the prominent states of India</div><br><br>
         
           <div id="options">
-            <p class="formText">View:
+
+            <p class="formText">
             <form class="formText">
+              <select id="modelList" onchange="selectModel()" name="model">
+              </select>
               <input type="radio" name="interval" value="1" onClick="urlChange(0)"> Line Plots View<t>
               <input type="radio" name="interval" value="2" onClick="urlChange(1)"> Calendar View <t>
               <br> 
             </form></p>
             </div>
-          <div id="plots"><iframe src="" name="iframe_a" width="1200px" height="1150px" frameBorder="0" ></iframe></div>
+          <div id="plots"><iframe src="" name="iframe_a" width="1200px" height="845px" frameBorder="0" ></iframe></div>
 					<div id = "map1"> 
 					</div>
-
-					
-          <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+          <br><br><br><br><br><br><br><br><br>
+          <br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+          <div id="slink"><a href="http://github.com/NCMRWF/json2MetPlots"><p class="sublist">Source Code</p></a> </div>  
+          <br><br><br><br>
          <!--  <div id="lineplots"><iframe src="" name="iframe_b" width="100%" height="1150px" frameBorder="0" ></iframe></div> -->
            <div id="substations"></div>
-				     		   
+				   
 	  
 
 <script>
-var dest_URL=["linePlots14july.html","calenderView12July2016.html"];
+var dest_URL=["linePlots20july.html","calenderView20July2016.html"];
 var destFrames=["iframe_a","iframe_a"];
 var destURL=dest_URL[0];
 var curFrame=destFrames[0];
 var curPlace="";
+var curModel;
+var ModelList=[]
 var curLat, curLon;
 var places = [
               {
@@ -194,8 +221,8 @@ var places = [
         nam: "linePlots05July_Opacity.html",
         latlon: "28.0N,75.0E",
                 location: {
-                  latitude: 28.28,
-                  longitude: 77.52
+                  latitude: 28.25,
+                  longitude: 77.5
                 }
               },
               {
@@ -430,7 +457,37 @@ var color= d3.scale.ordinal()
     .translate([-500,600]);*/
 
 <!--  -->
-
+$.ajax({
+          url: 'master.xml',
+          type: 'GET',
+          dataType: 'xml',
+          timeout: 1000,
+          error: function(){
+              alert('Error loading XML document');
+          },
+          success: function(xml){
+            var k;
+              var x1 = xml.getElementsByTagName('model');
+                for (k = 0; k < x1.length; k++)  
+                    ModelList.push(x1[k].getAttribute('name'));
+                    
+              curModel=ModelList[0];
+             // alert(ModelList);
+              createModelList();
+                
+          }
+     } );
+function createModelList()
+{
+  var ml=document.getElementById("modelList");
+  var j;
+  for (j=0;j<ModelList.length;j++)
+  {
+    var option=document.createElement("option");
+    option.text=ModelList[j];
+    ml.add(option);
+  }
+}
 var projection = d3.geo.mercator().scale(1100).translate([-1000,800]);
 //var projection = d3.geo.mercator().scale(1000).translate([-800,800]);
 var path = d3.geo.path()
@@ -440,6 +497,9 @@ var svg = d3.select("#map1").append("svg")
     .attr("viewBox", "0 0 1000 800")
 	 .attr("preserveAspectRatio", "xMidYMid meet");
 var data;
+var div = d3.select("#map1").append("div") 
+    .attr("class", "tooltip")       
+    .style("opacity", 0);
 d3.json("test.json", function(error, swiss) {
   if (error) throw error;
 
@@ -457,8 +517,6 @@ d3.json("test.json", function(error, swiss) {
 					var tip = d3.tip()
 							.attr('class', 'd3-tip')
 							.offset([-8, 0])
-							.style("left", "300px")
-							.style("top", "150px")
 							.html(function(d) {
                 //alert("tip !");
                 //dispSubstation(d.name,d.location.latitude,d.location.longitude);
@@ -467,7 +525,7 @@ d3.json("test.json", function(error, swiss) {
                 curPlace=d.name;
                 curLat=d.location.latitude;
                 curLon=d.location.longitude;
-                return ("<a href='javascript:;' onclick='dispSubstation("+d.location.latitude+","+d.location.longitude+")'>"+d.name +"</a>");
+                /*return ("<a href='javascript:;' onclick='dispSubstation("+d.location.latitude+","+d.location.longitude+")'>"+d.name +"</a>");*/
 							})
 							
 						svg.call(tip);
@@ -476,15 +534,28 @@ d3.json("test.json", function(error, swiss) {
 svg.selectAll(".pin")
 						  .data(places)
 						  .enter().append("circle", ".pin")
-						  .attr("r", 4)
+						  .attr("r", 4.5)
 						  .attr("transform", function(d) {
 							return "translate(" + projection([
 							  d.location.longitude,
 							  d.location.latitude
 							]) + ")";
 						  })
-						  .on('mouseover', tip.show)
-							.on('click', tip.hide);		
+						  .on('mouseover', function(d) {  
+
+                    div.transition()    
+                        .duration(200)    
+                        .style("opacity", 1);    
+                    div .html(d.name)  
+                        .style("left", (d3.event.pageX) + "px")   
+                        .style("top", (d3.event.pageY - 28) + "px");  
+            })
+							.on('click',function(d){ 
+                document.getElementById("substations").innerHTML="";
+                curPlace=d.name;
+                curLat=d.location.latitude;
+                curLon=d.location.longitude;
+                dispSubstation(d.location.latitude,d.location.longitude);});		
 					
 				//var projection = d3.geo.mercator().scale(900).translate([-600,700]);
 				var path= d3.geo.path().projection(projection);
@@ -502,7 +573,7 @@ function urlChange(index){
           destURL=dest_URL[index];
           curFrame=destFrames[index];
           if(curPlace!="")
-           window.open(destURL+"?latlon="+curLat+curLon,curFrame);
+           window.open(destURL+"?latlon="+curLat+curLon+"&place="+curPlace+"&model="+curModel,curFrame);
         }
 function dispSubstation(lat,lon){
       document.getElementById("substations").innerHTML="";
@@ -510,13 +581,15 @@ function dispSubstation(lat,lon){
       var width=400;
       //alert(curPlace);
       var list;
+      if(curModel=="Regional")
+      {
       d3.select("#substations").append("text").text("Prominent Substations of "+curPlace).attr("class","divTitle");
       var subsvg=d3.select("#substations").append("svg")
                   .attr("width",width+50)
                   .attr("height",height)
                   .attr("transform","translate(50,200)");
 
-      d3.json("substations.json",function(error,d){
+      d3.json("substations2.json",function(error,d){
           if (error) throw error;
           for(i=0;i<d.locations.length;i++)
           {
@@ -539,11 +612,23 @@ function dispSubstation(lat,lon){
               .attr("y",function(d,i){ return ((i%5)*30);})
               .on("click",function(d,i){ $(".sublist.sublistclicked").removeClass(".sublistclicked");
                                          $(this).addClass(".sublistclicked");
-                                          alert(d);});
+                                          //alert(d);
+                                          curLat=d[1];
+                                          curLon=d[2];
+                                          window.open(destURL+"?latlon="+curLat+curLon+"&place="+curPlace+"_"+d[0]+"&model="+curModel,curFrame);  
+
+                                        });
           
           subList.exit().remove();
       });
-      window.open(destURL+"?latlon="+lat+lon,curFrame);
+      }
+      else
+      window.open(destURL+"?latlon="+lat+lon+"&place="+curPlace+"&model="+curModel,curFrame);
+}
+function selectModel(){
+  var m=document.getElementById("modelList");
+  curModel=m.value;
+  //alert(curModel);
 }
 </script>
 

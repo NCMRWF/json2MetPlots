@@ -67,6 +67,14 @@ body {
   font-size: 25px;
   font-weight: bolder;
 }
+.title1{
+  color:#1F618D;
+  text-align: right;
+  float:right;
+  font-family: "Palantino Linotype";
+  font-size: 25px;
+  font-weight: bolder;
+}
 .vartitle{
   color:#273746;
   text-align: center;
@@ -76,6 +84,10 @@ body {
 }
 #varhead{
   height:25px;
+  width:410px;
+  margin:0 auto;
+  position: relative;
+
 }
 #opRange{
   width:50px;
@@ -177,13 +189,14 @@ body {
       }
 #dateOptions{
         text-align: right;
-        display: inline;
+        width:400px;
+        float:right;
       }
 #daylist{
         text-align:left;
-        display: inline-block;
         position: absolute;
-
+        float:left;
+        width:800px;
       }
 #legendOptions {
             position: relative;
@@ -201,6 +214,7 @@ body {
  #legends{
   color:#1C2833  ;
   border-radius: 10px;
+  margin-top: 40px;
   /*background-color: #A2D9CE;*/
   box-shadow: inset 0 0 5px #0097A7;
   text-align: center;
@@ -212,13 +226,14 @@ body {
   }
 </style>
 <body>
-  <div><p class="title">Graphs- Three Day Forecast</p></div>
+  <div id="heading"></div>
   <div id="dateOptions">
           <form class="formText">
             <select id="dateList" onchange="dateChange()" name="dates">
             </select>
           </form>
   </div>
+  <div id="daylist"></div>
   <div id="varhead"></div>
   <div id="legends"></div>
   <div id="plot"></div>
@@ -231,7 +246,7 @@ body {
           </form>
     </div>
   <div id="dataset-picker">
-  <div id="daylist"></div></div>
+  </div>
   
   
 <script src="//d3js.org/d3.v3.min.js"></script>
@@ -244,7 +259,7 @@ var margin = {top: 20, right: 80, bottom: 40, left: 50},
     height = 400 - margin.top - margin.bottom;
 //var variables=["temperature","mslp","pres","swflux"];
 //var colors = ["#1ABC9C","#225ea8","#F1C40F","#ff5733","#FF00FF"];
-var colors=["#B02F11","#0000DB","#FFFF1A","#00DB6E","#00DBDB"];
+var colors=[];
 var parseDate = d3.time.format("%Y%m%d").parse;
 var date=new Date();
 date.setHours(0,0,0,0);
@@ -299,12 +314,13 @@ var xAxis = d3.svg.axis()
     .tickSize(10)
     .tickFormat(d3.time.format("%H"))
     .orient("bottom");
-
+var path;
 var yAxis = d3.svg.axis()
     .scale(y)
     .tickSize(10)
     .orient("left");
 var yaxispos;
+var ylabel;
 var minmax_values=[];
 var units=[];
 var reg_max=[],reg_min=[];
@@ -312,7 +328,7 @@ var isUpdate=0;
 var compare=0;
 var recCounter=0;// for distiguishing recent readings and changing stroke style in case of compare.
 var line = d3.svg.line()
-    .x(function(d) { index++; if(index>0) u_date.setTime(u_date.getTime()+minOffset); return x(u_date); })
+    .x(function(d) { index++; if(index==0) return x(ref_date.getTime()-minOffset); if(index>0) u_date.setTime(u_date.getTime()+minOffset); return x(u_date); })
     .y(function(d) { if(d.val==9999) return y(0); return y(d.val); })
     .interpolate("linear");
 
@@ -321,15 +337,19 @@ var def_day_no=0;
 var curLegendOption=1;
 var svg;
 var svg1;
-var path;
+var filepath;
+var intervals=[];
 var latlon;
+var curPlace;
+var curModel;
+var title;
 var variables=[];
 var var_names=[];
 var curVariable;
 var vnames=[];
 
           $.ajax({
-          url: 'Vfile.xml',
+          url: 'master.xml',
           type: 'GET',
           dataType: 'xml',
           timeout: 1000,
@@ -337,25 +357,42 @@ var vnames=[];
               alert('Error loading XML document');
           },
           success: function(xml){
-              var xmlElement=xml.getElementsByTagName("variable");
-              for (i=0;i<xmlElement.length;i++)
-              {
-                  variables.push(xmlElement[i].childNodes[0].nodeValue);
-                  //alert(xmlElement[i].childNodes[0].nodeValue);
-              }
-              var xmlElement=xml.getElementsByTagName("name");
-              for (i=0;i<xmlElement.length;i++)
-              {
-                  vnames.push(xmlElement[i].childNodes[0].nodeValue);
-                  //alert(xmlElement[i].childNodes[0].nodeValue);
-              }
+              /*var a = window.location.toString();
+              latlon = a.substring(a.indexOf("=")+1);*/
+              getQueryVariable();
+              var x1 = xml.getElementsByTagName('model');
+                for (i = 0; i < x1.length; i++) { 
+                    if(x1[i].getAttribute('name')==curModel)
+                    {
+                      var xml1=x1[i];
+                      filepath=xml1.getElementsByTagName("path")[0].childNodes[0].nodeValue;
+                      title=xml1.getElementsByTagName("title")[0].childNodes[0].nodeValue;
+                      /*var interval=xml1.getElementsByTagName("interval");
+                      for (j=0;j<interval.length;j++)
+                          {
+                              intervals.push(interval[j].childNodes[0].nodeValue);
+                          }*/
+                        var vars=xml1.getElementsByTagName("variable");
+                        for (j=0;j<vars.length;j++)
+                          {
+                              vnames.push(vars[j].getElementsByTagName("vname")[0].childNodes[0].nodeValue);
+                              variables.push(vars[j].getElementsByTagName("fname")[0].childNodes[0].nodeValue);
+                              colors.push(vars[j].getElementsByTagName("lineColor")[0].childNodes[0].nodeValue);
+                          }
+                          //alert("Path :"+filepath);
+                          //alert(intervals);
+                          //alert(vnames);
+                          //alert(variables); 
+                          break;
+
+                    }
+                }
               curVariable="all";
               dayChoice();
               datasetButtons();
               dateString=["20160621","20160620","20160619","20160618","20160617"];
               curDate=dateString[0];
-              var a = window.location.toString();
-              latlon = a.substring(a.indexOf("=")+1);
+              d3.select("#heading").append("p").text(title).attr("class","title").append("text").text("Location: "+curPlace).attr("class","title1");
               //alert(vnames);
               //alert(variables);
               graphPlot(curVariable,curDate,def_day_no);
@@ -363,11 +400,26 @@ var vnames=[];
           }
       });
 
+function getQueryVariable()
+{
+       var query = window.location.search.substring(1);
+       var vars = query.split("&");
+       //alert(vars);
+       var pair = vars[0].split("=");
+       latlon=pair[1];
+       //alert(latlon);
+       pair=vars[1].split("=");
+       curPlace=pair[1];
+       //alert(curPlace);
+       pair=vars[2].split("=");
+       curModel=pair[1];    
+       //alert(curModel);   
+}
 var getGraph=function (g_variable,g_date,day_no){
   var unit;
   
 
-      d3.json("Stats/"+g_variable+"_"+g_date+".json", function(error, d) {
+      d3.json(filepath+g_variable+"_"+g_date+".json", function(error, d) {
                     if (error) throw error;
                     
                     var days=[];
@@ -618,7 +670,7 @@ var graphPlot= function(w_var,g_date,day_no){
               recCounter=0;
               var legsvg=d3.select("#legends").append("svg")
                   .attr("width",900)
-                  .attr("height", 40)
+                  .attr("height", 80)
                   .append("g");
  
               if(def_day_no==1)
@@ -651,10 +703,10 @@ var graphPlot= function(w_var,g_date,day_no){
                   getGraph(w_var,dateString[num-1],def_day_no-1);
                   dates.push(dispdates[num-1]);
                 }
+                getGraph(w_var,g_date,def_day_no);
+                dates.push(dispdates[num]);
                 if(num+1<5)
                 {
-                  getGraph(w_var,g_date,def_day_no);
-                  dates.push(dispdates[num]);
                   getGraph(w_var,dateString[num+1],def_day_no+1);
                   dates.push(dispdates[num+1]);
                 }
@@ -686,20 +738,26 @@ var graphPlot= function(w_var,g_date,day_no){
               var lines=legsvg.selectAll(".lines").data(dates)
                         .enter().append("line")
                         .attr("class", "line_b")
-                        .attr("x1", function (d,i){ return ((200*i)+150+(i*50));})
-                        .attr("x2", function (d,i){ return ((200*i)+250+(i*50));})
-                        .attr("y1", 25)
-                        .attr("y2", 25)
-                        .attr("stroke","#273746")
+                        .attr("x1", function (d,i){ return ((200*i)+180+(i*70));})
+                        .attr("x2", function (d,i){ return ((200*i)+280+(i*70));})
+                        .attr("y1", 30)
+                        .attr("y2", 30)
+                        .attr("stroke",function(){return colors[variables.indexOf(gv)];})
                         .style("stroke-opacity", 1)
                         .style("stroke-dasharray",function(d,i){if(d==0) return (0,0); return (Math.pow(2,(6-(2*i))),Math.pow(2,(6-(2*i))));});
               var textforlines=legsvg.selectAll(".lines").data(dates)
                         .enter().append("text")
                         .attr("class", "line_b")
-                        .attr("x", function (d,i){ return (200*i+20+(i*50));})
-                        .attr("y", 25)
+                        .attr("x", function (d,i){ return (200*i+20+(i*70));})
+                        .attr("y", 30)
                         .attr("class","legendText")
-                        .text(function(d){ return d+" ";});
+                        .text(function(d,i){ return d;});
+               var dayforlines=legsvg.selectAll(".lines").data(dates)
+                        .enter().append("text")
+                        .attr("x", function (d,i){ return (200*i+20+(i*70));})
+                        .attr("y", 60)
+                        .attr("class","legendText")
+                        .text(function(d,i){ return "Day:"+(i+1)+" Fcst";});
             }
             else{
               for(j=0;j<variables.length;j++)
@@ -723,12 +781,12 @@ var graphPlot= function(w_var,g_date,day_no){
                 .attr("x",8)
                 .attr("dy", ".71em");
                 
-            svg.append("text")
+            ylabel=svg.append("text")
               .style("font-weight","bolder")
               .style("font-size","20px")
               .attr("transform", "rotate(-90)")
               .attr("y", "-50")
-              .attr("x","-300")
+              .attr("x","-150")
               .style("text-anchor", "middle")
               .text(units[m_index]);
 
@@ -806,17 +864,17 @@ function datasetButtons(){
 function dayChoice()
 { 
     var days=[0,1,2,3];
-    var dayButtons=d3.select("#dateOptions").selectAll(".dayButtons")
+    var dayButtons=d3.select("#daylist").selectAll(".dayButtons")
                   .data(days).enter()
                   .append("input")
                   .attr("type","button")
                   .attr("class","daybutton")
-                  .attr("value",function(d){ if (d==0) return "All"; return "Day :"+d;})
+                  .attr("value",function(d){ if (d==0) return "All days"; return "Day :"+d;})
                   .on("click",function(d){ 
                     $(".daybutton.daybuttonPressed").removeClass("daybuttonPressed");
                     $(this).addClass("daybuttonPressed");
                     dayWiseView(d);});
-    var compareButton=d3.select("#dateOptions").append("input")
+    var compareButton=d3.select("#daylist").append("input")
                     .attr("type","button")
                     .attr("value","Compare")
                     .attr("class","compareButton")
@@ -855,7 +913,7 @@ function dateChange(){
           document.getElementById("varhead").innerHTML = "";
           document.getElementById("plot").innerHTML = "";
           document.getElementById("legends").innerHTML="";
-          graphPlot(curVariable,curDate,0);
+          graphPlot(curVariable,curDate,def_day_no);
           //to load whole new files of that particular date.
         }
 
@@ -910,13 +968,10 @@ function yaxisFunction() {
               y.domain([reg_min[m_index],reg_max[m_index]]);
 
        yaxispos.attr("transform","translate("+document.body.scrollLeft+",0)");
+     /*  ylabel.text(units[m_index]);
+       ylabel.attr("transform","translate(-150,"+document.body.scrollLeft+")");*/
        yaxispos.call(yAxis);
-        /*if (document.body.scrollRight > 0 || document.documentElement.scrollLeft > 0) {
-            document.getElementById("myP").className = "test";
-        } else {
-            document.getElementById("myP").className = "";
-        }*/
-  }
+    }
 }
 
 </script>
