@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- most recent version -->
+<!-- tooltip corrected -->
 <meta charset="utf-8">
 <head>
   
@@ -113,7 +113,7 @@
        }
        #substations{
          font-weight: bold;
-          position: relative;
+          position: absolute;
           width:450px;
           height:230px;
           margin-top:10px;
@@ -147,19 +147,32 @@
         }
         
          a:hover {
-            text-decoration: none;
-            background-color:#FFFF33;
-            
+            text-decoration: none;            
         }
         .sublist:hover {
             text-decoration: underline;
-            color:#FFFF33;
+            color:#12FF33;
         }
 
         .sublistclicked {
            color:#00CC00 ;
         }
-  			
+  			div.tooltip {  
+    position: absolute;     
+    text-align: center; 
+    color:#154360;              
+    height: 20px;         
+    padding: 2px;       
+    font: 15px sans-serif bold;    
+    border: 0px;    
+    border-radius: 8px;     
+    pointer-events: none;     
+    }
+    #slink{
+      position:absolute;
+
+    }
+
   </style>
 </head>
 <body>
@@ -181,19 +194,20 @@
               <br> 
             </form></p>
             </div>
-          <div id="plots"><iframe src="" name="iframe_a" width="1200px" height="900px" frameBorder="0" ></iframe></div>
+          <div id="plots"><iframe src="" name="iframe_a" width="1200px" height="845px" frameBorder="0" ></iframe></div>
 					<div id = "map1"> 
 					</div>
-
-					
-          <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+          <br><br><br><br><br><br><br><br><br>
+          <br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+          <div id="slink"><a href="http://github.com/NCMRWF/json2MetPlots"><p class="sublist">Source Code</p></a> </div>  
+          <br><br><br><br>
          <!--  <div id="lineplots"><iframe src="" name="iframe_b" width="100%" height="1150px" frameBorder="0" ></iframe></div> -->
            <div id="substations"></div>
-				     		   
+				   
 	  
 
 <script>
-var dest_URL=["linePlots17july.html","calenderView17July2016.html"];
+var dest_URL=["linePlots20july.html","calenderView20July2016.html"];
 var destFrames=["iframe_a","iframe_a"];
 var destURL=dest_URL[0];
 var curFrame=destFrames[0];
@@ -207,8 +221,8 @@ var places = [
         nam: "linePlots05July_Opacity.html",
         latlon: "28.0N,75.0E",
                 location: {
-                  latitude: 28.28,
-                  longitude: 77.52
+                  latitude: 28.25,
+                  longitude: 77.5
                 }
               },
               {
@@ -483,6 +497,9 @@ var svg = d3.select("#map1").append("svg")
     .attr("viewBox", "0 0 1000 800")
 	 .attr("preserveAspectRatio", "xMidYMid meet");
 var data;
+var div = d3.select("#map1").append("div") 
+    .attr("class", "tooltip")       
+    .style("opacity", 0);
 d3.json("test.json", function(error, swiss) {
   if (error) throw error;
 
@@ -500,8 +517,6 @@ d3.json("test.json", function(error, swiss) {
 					var tip = d3.tip()
 							.attr('class', 'd3-tip')
 							.offset([-8, 0])
-							.style("left", "300px")
-							.style("top", "150px")
 							.html(function(d) {
                 //alert("tip !");
                 //dispSubstation(d.name,d.location.latitude,d.location.longitude);
@@ -510,7 +525,7 @@ d3.json("test.json", function(error, swiss) {
                 curPlace=d.name;
                 curLat=d.location.latitude;
                 curLon=d.location.longitude;
-                return ("<a href='javascript:;' onclick='dispSubstation("+d.location.latitude+","+d.location.longitude+")'>"+d.name +"</a>");
+                /*return ("<a href='javascript:;' onclick='dispSubstation("+d.location.latitude+","+d.location.longitude+")'>"+d.name +"</a>");*/
 							})
 							
 						svg.call(tip);
@@ -526,8 +541,21 @@ svg.selectAll(".pin")
 							  d.location.latitude
 							]) + ")";
 						  })
-						  .on('mouseover', tip.show)
-							.on('click',function(d){ dispSubstation(d.location.latitude,d.location.longitude);});		
+						  .on('mouseover', function(d) {  
+
+                    div.transition()    
+                        .duration(200)    
+                        .style("opacity", 1);    
+                    div .html(d.name)  
+                        .style("left", (d3.event.pageX) + "px")   
+                        .style("top", (d3.event.pageY - 28) + "px");  
+            })
+							.on('click',function(d){ 
+                document.getElementById("substations").innerHTML="";
+                curPlace=d.name;
+                curLat=d.location.latitude;
+                curLon=d.location.longitude;
+                dispSubstation(d.location.latitude,d.location.longitude);});		
 					
 				//var projection = d3.geo.mercator().scale(900).translate([-600,700]);
 				var path= d3.geo.path().projection(projection);
@@ -545,7 +573,7 @@ function urlChange(index){
           destURL=dest_URL[index];
           curFrame=destFrames[index];
           if(curPlace!="")
-           window.open(destURL+"?latlon="+lat+lon+"&place="+curPlace+"&model="+curModel,curFrame);
+           window.open(destURL+"?latlon="+curLat+curLon+"&place="+curPlace+"&model="+curModel,curFrame);
         }
 function dispSubstation(lat,lon){
       document.getElementById("substations").innerHTML="";
@@ -553,13 +581,15 @@ function dispSubstation(lat,lon){
       var width=400;
       //alert(curPlace);
       var list;
+      if(curModel=="Regional")
+      {
       d3.select("#substations").append("text").text("Prominent Substations of "+curPlace).attr("class","divTitle");
       var subsvg=d3.select("#substations").append("svg")
                   .attr("width",width+50)
                   .attr("height",height)
                   .attr("transform","translate(50,200)");
 
-      d3.json("substations.json",function(error,d){
+      d3.json("substations2.json",function(error,d){
           if (error) throw error;
           for(i=0;i<d.locations.length;i++)
           {
@@ -582,10 +612,17 @@ function dispSubstation(lat,lon){
               .attr("y",function(d,i){ return ((i%5)*30);})
               .on("click",function(d,i){ $(".sublist.sublistclicked").removeClass(".sublistclicked");
                                          $(this).addClass(".sublistclicked");
-                                          alert(d);});
+                                          //alert(d);
+                                          curLat=d[1];
+                                          curLon=d[2];
+                                          window.open(destURL+"?latlon="+curLat+curLon+"&place="+curPlace+"_"+d[0]+"&model="+curModel,curFrame);  
+
+                                        });
           
           subList.exit().remove();
       });
+      }
+      else
       window.open(destURL+"?latlon="+lat+lon+"&place="+curPlace+"&model="+curModel,curFrame);
 }
 function selectModel(){
