@@ -87,6 +87,14 @@
         display: inline;
         font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ; 
       }
+      #modelList{
+        text-align: left;
+        font-size: 20px;
+        color:#273746;
+        font-weight: bold;
+        display: inline;
+        font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif ; 
+      }
        #urlList{
         text-align: left;
         font-size: 20px;
@@ -163,14 +171,17 @@
           <div id="subtitle">Glimpse of Weather Conditions in the prominent states of India</div><br><br>
         
           <div id="options">
-            <p class="formText">View:
+
+            <p class="formText">
             <form class="formText">
+              <select id="modelList" onchange="selectModel()" name="model">
+              </select>
               <input type="radio" name="interval" value="1" onClick="urlChange(0)"> Line Plots View<t>
               <input type="radio" name="interval" value="2" onClick="urlChange(1)"> Calendar View <t>
               <br> 
             </form></p>
             </div>
-          <div id="plots"><iframe src="" name="iframe_a" width="1200px" height="1150px" frameBorder="0" ></iframe></div>
+          <div id="plots"><iframe src="" name="iframe_a" width="1200px" height="900px" frameBorder="0" ></iframe></div>
 					<div id = "map1"> 
 					</div>
 
@@ -182,11 +193,13 @@
 	  
 
 <script>
-var dest_URL=["linePlots14july.html","calenderView12July2016.html"];
+var dest_URL=["linePlots17july.html","calenderView17July2016.html"];
 var destFrames=["iframe_a","iframe_a"];
 var destURL=dest_URL[0];
 var curFrame=destFrames[0];
 var curPlace="";
+var curModel;
+var ModelList=[]
 var curLat, curLon;
 var places = [
               {
@@ -430,7 +443,37 @@ var color= d3.scale.ordinal()
     .translate([-500,600]);*/
 
 <!--  -->
-
+$.ajax({
+          url: 'master.xml',
+          type: 'GET',
+          dataType: 'xml',
+          timeout: 1000,
+          error: function(){
+              alert('Error loading XML document');
+          },
+          success: function(xml){
+            var k;
+              var x1 = xml.getElementsByTagName('model');
+                for (k = 0; k < x1.length; k++)  
+                    ModelList.push(x1[k].getAttribute('name'));
+                    
+              curModel=ModelList[0];
+             // alert(ModelList);
+              createModelList();
+                
+          }
+     } );
+function createModelList()
+{
+  var ml=document.getElementById("modelList");
+  var j;
+  for (j=0;j<ModelList.length;j++)
+  {
+    var option=document.createElement("option");
+    option.text=ModelList[j];
+    ml.add(option);
+  }
+}
 var projection = d3.geo.mercator().scale(1100).translate([-1000,800]);
 //var projection = d3.geo.mercator().scale(1000).translate([-800,800]);
 var path = d3.geo.path()
@@ -476,7 +519,7 @@ d3.json("test.json", function(error, swiss) {
 svg.selectAll(".pin")
 						  .data(places)
 						  .enter().append("circle", ".pin")
-						  .attr("r", 4)
+						  .attr("r", 4.5)
 						  .attr("transform", function(d) {
 							return "translate(" + projection([
 							  d.location.longitude,
@@ -484,7 +527,7 @@ svg.selectAll(".pin")
 							]) + ")";
 						  })
 						  .on('mouseover', tip.show)
-							.on('click', tip.hide);		
+							.on('click',function(d){ dispSubstation(d.location.latitude,d.location.longitude);});		
 					
 				//var projection = d3.geo.mercator().scale(900).translate([-600,700]);
 				var path= d3.geo.path().projection(projection);
@@ -502,7 +545,7 @@ function urlChange(index){
           destURL=dest_URL[index];
           curFrame=destFrames[index];
           if(curPlace!="")
-           window.open(destURL+"?latlon="+curLat+curLon,curFrame);
+           window.open(destURL+"?latlon="+lat+lon+"&place="+curPlace+"&model="+curModel,curFrame);
         }
 function dispSubstation(lat,lon){
       document.getElementById("substations").innerHTML="";
@@ -543,7 +586,12 @@ function dispSubstation(lat,lon){
           
           subList.exit().remove();
       });
-      window.open(destURL+"?latlon="+lat+lon,curFrame);
+      window.open(destURL+"?latlon="+lat+lon+"&place="+curPlace+"&model="+curModel,curFrame);
+}
+function selectModel(){
+  var m=document.getElementById("modelList");
+  curModel=m.value;
+  //alert(curModel);
 }
 </script>
 
