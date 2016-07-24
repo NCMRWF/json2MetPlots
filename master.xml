@@ -81,14 +81,14 @@
 				<fname>swflux</fname>
 				<lineColor>#00DB6E</lineColor>
 				<calendarColor>
-					<color>#081d58</color>
-					<color>#253494</color>
-					<color>#225ea8</color>
-					<color>#1d91c0</color>
-					<color>#ffff00</color>
-					<color>#ffc300</color>
-					<color>#ff5733</color>
-					<color>#c70039</color>
+					<color>#98FB98</color>
+					<color>#90EE90</color>
+					<color>#00FF7F</color>
+					<color>#00FA9A</color>
+					<color>#3CB371</color>
+					<color>#2E8B57</color>
+					<color>#008000</color>
+					<color>#006400</color>
 				</calendarColor>
 				<desc></desc>
 			</variable>
@@ -111,22 +111,22 @@
 		</variables>
 	</model>
 	<model name="Global">
-		<title>NCUM Global 17 km</title>
+		<title>NCUM GLOBAL MODEL AT 17 km</title>
 		<path>Stats/Global/</path>
 		<forecastDays>5</forecastDays>
 		<frequency>1 hour</frequency>
 		<intervals>
 			<interval>
 				<iname>1 hour</iname>
-				<steps>4</steps>
+				<steps>1</steps>
 			</interval>
 			<interval>
 				<iname>2 hours</iname>
-				<steps>8</steps>
+				<steps>2</steps>
 			</interval>
 			<interval>
 				<iname>3 hours</iname>
-				<steps>12</steps>
+				<steps>3</steps>
 			</interval>
 		</intervals>
 		<variables>
@@ -198,6 +198,22 @@
 				<vname>Mean Sea Level Pressure</vname>
 				<fname>mslp</fname>
 				<lineColor>#00DBDB</lineColor>
+				<calendarColor>
+					<color>#081d58</color>
+					<color>#253494</color>
+					<color>#225ea8</color>
+					<color>#1d91c0</color>
+					<color>#ffff00</color>
+					<color>#ffc300</color>
+					<color>#ff5733</color>
+					<color>#c70039</color>
+				</calendarColor>
+				<desc></desc>
+			</variable>
+			<variable>
+				<vname>Precipitation</vname>
+				<fname>precip</fname>
+				<lineColor>#800080</lineColor>
 				<calendarColor>
 					<color>#081d58</color>
 					<color>#253494</color>
