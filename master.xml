@@ -111,7 +111,7 @@
 		</variables>
 	</model>
 	<model name="Global">
-		<title>NCUM Global 25 km</title>
+		<title>NCUM Global 17 km</title>
 		<path>Stats/Global/</path>
 		<forecastDays>5</forecastDays>
 		<frequency>1 hour</frequency>
